@@ -1,0 +1,3838 @@
+local error,reason = pcall(function()
+local WhitelistedRanks = {
+    ["ii_SaucyyRon"]="Owner",
+    ["BBBBBBBBBBBBBB8B"]="Owner",
+    ["sla_yte"]="Admin",
+    ["baotimmy2011"]="Admin",
+    ["myshind"]="Admin",
+    ["DonnerReed"]="Admin"
+}
+local WhitelistedAdmins = {}
+local HttpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request;
+local celerymode=false
+if getgenv().rnet then celerymode=true end
+if celerymode then
+script=Instance.new("LocalScript",game.CoreGui)
+script.Name=tostring(math.random(-99999999,99999999))
+end
+local SOUND,MARKET,RANK,STRING,GUI = {},{},{},{},{}
+local CORE = {}
+local UI = nil
+local Player = game.Players.LocalPlayer
+local Rank = ""
+if WhitelistedRanks[Player.Name] then
+    Rank = WhitelistedRanks[Player.Name]
+else
+    Rank = "Member"
+end
+local REMOTE = {}
+CORE.Version="2.9"
+REMOTE.RemoteConnection=true
+local GameOwner = "[ Client ]"
+local PlaceName = "Unknown"
+local PlaceInfo = {}
+local IsStudio = false
+local IsSB = false
+local Date = nil
+local Fonts = {}
+local PendingRequests = {}
+local RemoteData = {RemoteAdminWait = 5, ChatLogWait = 20, TrelloWait = 10}
+local KeyBinds = {}
+local Crowns = {}
+local LastKeys = {}
+local Cars = {}
+local ScriptCache,MarketCache,PackageCache = {},{}
+local StringReplacements = {}
+local SoundInfo = {["ID"] = 0, ["Name"] = "None", ["Creator"] = "None"}
+local NoBet = {"/", "-", "(", ")", ""}
+local ShouldFilter = true
+local Settings = {
+    CorrectColorScheme=true;
+    
+	Ranks = {
+		["Owner"] = {};
+		["Admin"] = {};
+		["Member"] = {};
+		["Banned"] = {};
+		["Crashed"] = {};
+		["Muted"] = {};
+	};
+	
+	Prefix = ".";
+	Bet = " ";
+	MinimumAge = 0;
+	ServerLocked = false;
+	ColorScheme = "White";
+	TransparencyScheme = 50;
+	Fun = true;
+	EnableAdminMenu = true;
+	EnableTaskBar = true;
+	FreeAdmin = false;
+	Font = "Arial";
+	
+	DisableAbuse = false;
+	AbuseList = {"kill", "punish", "respawn", "smoke", "blind", "strobe", "flash", "control", "give", "health", "clone", "loopfling", "fling", "drug", "explode", "splode", "ragdoll", "change", "insert", "decal", "taketools", "removetools", "bomb", "say", "sink", "asteroid", "gun", "health", "damage", "btools", "missile", "reck", "truck", "debug"};
+	AbusableGear = {55028088, 73089166, 73089190, 73089204, 73089214, 73089239, 73089259, 58921588, 65347268, 130113146, 139578207, 21001552, 58901335, 36431591, 35268363, 16201421, 16200402, 16200204, 16200373, 60791062, 58880579, 73089204, 73089239, 73089259, 36270159, 36334760, 36738185, 58901481, 58901575, 73089229, 73089214, 35200756, 36068233, 36017373, 35223828, 35201552, 55027987, 35205409, 36738142, 16975388, 35226945, 18474459};
+	
+	LinkedAccount = "";
+	DataKey = "";
+	
+	ExecuteNotificationSound = 0; --177578949
+	EnableSounds = true;
+	
+	VIPMemberID = 0;
+	VIPAdminID = 0;
+	
+	GroupID = 0;
+	GroupBanRank = 0;
+	GroupMemberRank = 0;
+	GroupAdminRank = 0;
+	GroupOwnerRank = 0;
+	GroupRankBan = 0;
+	BannedGroupIDs = {};
+	
+	IRCServer = "";
+	IRCChannel = "";
+	IRCCommandExecuters = {};
+	
+	TrelloToken = ""
+}
+local rainbowvalue=0
+local Colors = {
+	["WHITE"] = Color3.new(1,1,1);
+	["RAINBOW"] = Color3.fromHSV(rainbowvalue,1,1);
+	["BLACK"] = Color3.new(0,0,0);
+	["GRAY"] = Color3.new(0.5,0.5,0.5);
+	["RED"] = Color3.new(1,0,0);
+	["GREEN"] = Color3.new(0,1,0);
+	["BLUE"] = Color3.new(0,0,1);
+	["YELLOW"] = Color3.new(1,1,0);
+	["PINK"] = Color3.new(1,0,1);
+	["MAGENTA"] = Color3.new(1,0,1);
+	["CYAN"] = BrickColor.new("Cyan").Color;
+	["TEAL"] = BrickColor.new("Teal").Color;
+	["BROWN"] = Color3.new(0.55,0.25,0.075);
+	["PURPLE"] = Color3.new(0.5,0,0.5);
+	["RANDOM"] = Color3.new(math.random(0,255)/255,math.random(0,255)/255,math.random(0,255)/255);
+}
+local IconIDs={
+    Checkmark=72382658;
+    XMark=72382648;
+}
+spawn(function()
+    game:GetService("RunService").RenderStepped:Connect(function()
+        Colors["RAINBOW"]=Color3.fromHSV(rainbowvalue,1,1)
+        rainbowvalue = rainbowvalue + 1/500
+        if rainbowvalue >= 1 then
+        rainbowvalue = 0
+        end
+        --[[pcall(function()
+        if Settings.ColorScheme == "Rainbow" and running then
+            for i,v in pairs(game.CoreGui:GetChildren()) do
+                if v.Name == "MakerModelLua's Admin Form" then
+                    v.Dragger.BackgroundColor3 = GUI:GetColor()
+                    v.Dragger.BorderColor3 = GUI:GetColor()
+                    v.Dragger.Splitter.BackgroundColor3 = GUI:GetColor()
+                    v.Dragger.Splitter.BorderColor3 = GUI:GetColor()
+                    pcall(function()
+                    v.Dragger.Body.SearchBar.BackgroundColor3=GUI:GetColor()
+                    end)
+                    pcall(function()
+                        for i,v in pairs(v:GetDescendants()) do
+                            if v:IsA("TextBox") or v:IsA("TextLabel") or v:IsA("TextButton") then
+                                v.TextColor3=GUI:GetColor()
+                            end
+                        end
+                    end)
+                end
+            end
+        end
+        end)]]
+    end)
+end)
+local ViewSettings = {
+		["Version"] = {CORE.Version, false, nil};
+		["Prefix"] = {Settings.Prefix, 3, "Prefix"};
+		["Font"] = {Settings.Font, 3, "Font"};
+		["Color Scheme"] = {Settings.ColorScheme, 3, "ColorScheme"};
+		["Transparency Scheme"] = {Settings.TransparencyScheme * 100, 3, "TransparencyScheme"};
+		["Server Locked"] = {Settings.ServerLocked, 3, "ServerLocked"};
+		["Fun Commands"] = {Settings.Fun, 3, "Fun"};
+		["Disable Abuse"] = {Settings.DisableAbuse, 3, "DisableAbuse"};
+		["Minimum Account Age"] = {Settings.MinimumAge, 3, "MinimumAge"};
+		["Execute Notification Sound ID"] = {Settings.ExecuteNotificationSound, 3, "ExecuteNotificationSound"};
+		["Enable Sounds"] = {Settings.EnableSounds, 3, "EnableSounds"};
+		["Group ID"] = {Settings.GroupID, false, "GroupID"};
+		["Group Banned Rank"] = {Settings.GroupBanRank, false, "GroupBanRank"};
+		["Group Member Rank"] = {Settings.GroupMemberRank, false, "GroupMemberRank"};
+		["Group Admin Rank"] = {Settings.GroupAdminRank, false, "GroupAdminRank"};
+		["Group Owner Rank"] = {Settings.GroupOwnerRank, false, "GroupOwnerRank"};
+		["Banned Group IDs"] = {Settings.BannedGroupIDs, false, "BannedGroupIDs"};
+		["IRC Server"] = {Settings.IRCServer, false, "IRCServer"};
+		["IRC Channel"] = {Settings.IRCChannel, false, "IRCChannel"};
+		["Remote Connection"] = {REMOTE.RemoteConnection, false, nil};
+		["Bet"] = {Settings.Bet, 3, "Bet"};
+	}
+	function STRING:LeetSpeak(Input)
+	if tostring(Input) then Input = string.upper(tostring(Input)) else return end
+	Input = string.gsub(Input, "LEET", "1337")
+	Input = string.gsub(Input, "SECRET", "M".."AKERMODELLUA")
+	Input = string.gsub(Input, "E", "3")
+	Input = string.gsub(Input, "O", "0")
+	Input = string.gsub(Input, "A", "4")
+	Input = string.gsub(Input, "X", "x")
+	Input = string.gsub(Input, "I", "1")
+	Input = string.gsub(Input, "S", "$")
+	return Input
+end
+local ClientInfo,LoopKills,List,Flings,Beeps = {},{},{},{},{}
+	StringReplacements = {
+	{"_SERVERTIME", "total server time in seconds", false, function(Player) return tostring(math.floor(Workspace.DistributedGameTime)) end};
+	{"_PLACEID", "the current place's ID", false, function(Player) return tostring(game.PlaceId) end};
+	{"_CREATORID", "the game's creator's user ID", false, function(Player) return tostring(game.CreatorId) end};
+	{"_CREATOR", "the game's creator's username", false, function(Player) return GameOwner end};
+	{"_PLACENAME", "the current place's name", false, function(Player) return PlaceName end};
+	{"_REVPLACENAME", "the current place's name in reverse", false, function(Player) return string.reverse(PlaceName) end};
+	{"_PLACEDESC", "the current place's description", false, function(Player) return PlaceInfo.Description end};
+	{"_RANDOM", "a random number from 1-10000", false, function(Player) return tostring(math.random(1,10000)) end};
+	{"_DATE", "the current date (if Http connected)", false, function(Player) return Date or "Cannot get date. Http not connected" end};
+	{"_TIME", "the current time", false, function(Player) return 0 end};
+	
+	{{"_SOUNDID", "_SONGID", "_MUSICID"}, "the ID of the sound playing", false, function(Player) return tostring(SoundInfo["ID"]) end};
+	{{"_SOUNDCREATOR", "_SONGCREATOR", "_MUSICCREATOR"}, "the name of the creator of the sound playing", false, function(Player) return SoundInfo["Creator"] end};
+	{{"_SOUND", "_SONG", "_MUSIC"}, "the name of the sound playing", false, function(Player) return SoundInfo["Name"] end};
+	{"_FONT", "the font of the admin", false, function(Player) return Settings.Font end};
+	{"_COLOR", "the color scheme of the admin", false, function(Player) return Settings.ColorScheme end};
+	{{"_TRANS", "_TRANSPARENCY"}, "the transparency scheme of the admin", false, function(Player) return tostring(Settings.TransparencyScheme * 100).."%%" end};
+	
+	{"_USERID", "player's UserID", true, function(Player) return tostring(Player.UserId) end};
+	{"_NAMELEN", "player's username length", true, function(Player) return tostring(string.len(Player.Name)) end};
+	{"_REVNAME", "player's username in reverse", true, function(Player) return string.reverse(Player.Name) end};
+	{"_UPNAME", "player's username in uppercase", true, function(Player) return string.upper(Player.Name) end};
+	{"_LOWNAME", "player's username in lowercase", true, function(Player) return string.lower(Player.Name) end};
+	{"_NAME", "player's username", true, function(Player) return Player.Name end};
+	{"_LEETNAME", "player's username in leetspeak", true, function(Player) return STRING:LeetSpeak(Player.Name) end};
+	{"_ACCOUNTAGE", "player's account age", true, function(Player) return tostring(Player.AccountAge) end};
+	{"_AGE", "player's account age", true, function(Player) return tostring(Player.AccountAge) end};
+	{{"_BENCHMARK", "_BENCH"}, "player's benchmark score (if available)", true, function(Player) if true then return tostring("q") end end};
+	{"_WALKSPEED", "player's WalkSpeed", true, function(Player) if Player.Character and Player.Character:FindFirstChild("Humanoid") then return tostring(Player.Character.Humanoid.WalkSpeed) else return "No humanoid" end end};
+	{"_HEALTH", "player's health", true, function(Player) if Player.Character and Player.Character:FindFirstChild("Humanoid") then return tostring(Player.Character.Humanoid.Health) else return "No humanoid" end end};
+	{"_MAXHEALTH", "player's MaxHealth", true, function(Player) if Player.Character and Player.Character:FindFirstChild("Humanoid") then return tostring(Player.Character.Humanoid.MaxHealth) else return "No humanoid" end end};
+	{"_RANKNUM", "player's rank number", true, function(Player) return tostring(1) end};
+	{"_RANK", "player's rank", true, function(Player) return 1 end};
+	{{"_POS", "_POSITION"}, "player's position", true, function(Player) tostring(Player.Character.Head.Position) end};
+}
+	function STRING:FormatReplace(Player, Input, From)
+	local Output = Input
+	for _,ReplaceData in pairs(StringReplacements) do
+		local ReplaceString = ReplaceData[1]
+		local ReplaceStrings = {}
+		if type(ReplaceString) == "table" then
+			ReplaceStrings = ReplaceString
+		else
+			ReplaceStrings = {ReplaceString}
+		end
+		for _,ReplaceString in pairs(ReplaceStrings) do
+			if not Player and ReplaceData[3] then else -- does nothing if a player isn't given but the operation requires a player
+				local Replacement = ReplaceData[4](Player)
+				if type(Replacement) == "string" then
+					Output = string.gsub(Output, ReplaceString, Replacement)
+				else
+					--print(ReplaceString.." cannot be replaced")
+				end
+			end
+		end
+	end
+	if true then
+		return Output
+	else
+		return STRING:DetermineFilter(Output, Player)
+	end
+end
+function GUI:GetColor(ColorName)
+	if not ColorName then ColorName = Settings.ColorScheme end
+	return Colors[string.upper(ColorName)]
+end
+local HTMLDecode = {
+	["35"] = "#";
+	["36"] = "$";
+	["37"] = "%%";
+	["38"] = "*";
+	["39"] = "'";
+	["58"] = ":";
+	["59"] = ";";
+	["60"] = "<";
+	["62"] = ">";
+}
+
+
+local Assets = {
+	Packages = {
+		[27112438] = {27112025,27112039,27112052,27112056,27112068};
+		[139610216] = {139607570,139607625,139607673,139607718,139607770,139610147};
+		[77518833] = {77518564,77518616,77518654,77518696,77518737};
+		[32336368] = {32336059,32336117,32336182,32336243,32336306};
+		[59772975] = {59772137,59772181,59772219,59772279,59772667,59721671};
+		[54116460] = {54116290,54116338,54116373,54116394,54116432};
+		[39977366] = {39976703,39976829,39976927,39977192,39977295};
+		[32357766] = {32357663,32357631,32357619,32357584,32357558};
+		[27123973] = {27121265,27121306,27121353,27121393,27121432};
+		[55717536] = {55717271,55717330,55717388,55717434,55717491};
+		[28279963] = {28279160,28279217,28279859,28279894,28279938};
+		[27403592] = {27402580,27402546,27402641,27402714,27402742};
+		[86499905] = {86499666,86499698,86499716,86499753,86499793,86498113,62724852,86487766};
+		[86500185] = {86500054,86500078,86500036,86500008,86500064,86487700,86498048,62234425};
+		[48474394] = {48474356,48474294};
+		[187996626] = {187996057,187996098,187996167,187996258,187996321,187996409,187996534};
+		[223826660] = {223824598,223825145,223825310,223825496,223825618,223825761,223825893,223800426};
+		[188835832] = {188835233,188835327,188835428,188835511,188835586,188835673,188644771};
+		[139581948] = {139581117,139581174,139581230,139581292,139581375,139581559,139581668,139581823};
+		[33378577] = {33378366,33378438,33378484,33378522,33378540};
+		[101744863] = {101742885,101743631,101716880,101744248,101744215,101744371};
+		[136793141] = {136792342,136792633,136792698,136792747,136792820,136795159,136795130};
+		[91658555] = {91657680,91657749,91657884,91657986,91658092,91658290,90249118};
+		[41851073] = {41850825,41850868,41850915,41851009,41850959}
+	};
+	AssetTypes = {
+		[0] = "Product";
+		[1] = "Image";
+		[2] = "T-Shirt";
+		[3] = "Audio";
+		[4] = "Mesh";
+		[5] = "Lua";
+		[6] = "HTML";
+		[7] = "Text";
+		[8] = "Hat";
+		[9] = "Place";
+		[10] = "Model";
+		[11] = "Shirt";
+		[12] = "Pants";
+		[13] = "Decal";
+		[16] = "Avatar";
+		[17] = "Head";
+		[18] = "Face";
+		[19] = "Gear";
+		[21] = "Badge";
+		[22] = "Group Emblem";
+		[24] = "Animation";
+		[25] = "Arms";
+		[26] = "Legs";
+		[27] = "Torso";
+		[28] = "Right Arm";
+		[29] = "Left Arm";
+		[30] = "Left Leg";
+		[31] = "Right Leg";
+		[32] = "Package";
+		[33] = "YouTube Video";
+		[34] = "Game Pass";
+		[38] = "Plugin";
+		[39] = "SolidModel";
+		[40] = "MeshPart";
+		[41] = "Hair Accessory";
+		[42] = "Face Accessory";
+		[43] = "Neck Accessory";
+		[44] = "Shoulder Accessory";
+		[45] = "Front Accessory";
+		[46] = "Back Accessory";
+	};
+	AccessoryTypes = {
+		["all"] = 19;
+		["hats"] = 9;
+		["hair"] = 20;
+		["face"] = 21;
+		["neck"] = 22;
+		["shoulder"] = 23;
+		["front"] = 24;
+		["back"] = 25;
+		["waist"] = 26;
+	};
+}
+
+local CharacterCache = {
+	{"MakerModelLua", 38837082};
+	{"LuaModelMaker", 20920633};
+	{"builderman", 156};
+	{"Shedletsky", 261};
+	{"Telamon", 13645};
+	{"ROBLOX", 1};
+}
+
+local FaceCovert = {
+	Left = "xpos";
+	Right = "xneg";
+	Front = "zpos";
+	Back = "zneg";
+	Top = "ypos";
+	Bottom = "yneg";
+}
+function REMOTE:GetURL(URL, Player)
+	if string.sub(URL,1,4) ~= "http" then
+		URL = "http://"..URL
+	end
+	local Return = nil
+	ypcall(function() Return = Server.HS:GetAsync(URL, true) end)
+	if Return then
+		return Return
+	elseif Player then
+		GUI:SendMessage(Speaker, "Unable to find link", "RED URL given is either invalid or httpservice is disabled", "Error")
+	end
+end
+local Meshes = {
+	["crown"] = {1, 1078075};
+	["king"] = {1, 11419761};
+	["teapot"] = {0.03, 1029523};
+	["apple"] = {2.5, 16190555};
+	["potato"] = {1, 25268275};
+	["panda"] = {0.5, 20709221};
+	["dominus"] = {0.5, 21057410};
+	["fedora"] = {0.75, 13640868};
+	["noob"] = {1, 20929341};
+	["knife"] = {0.3, 121944778};
+	["book"] = {0.3, 1136139};
+}
+
+local NotifySounds = {
+	["Hover"] = 223134269;
+	["Select"] = 292141227;
+}
+function CORE:HandleEvent(Obj, EventName, Func, NewThread)
+	local function Handle()
+		if false then
+			local Event = CORE:CreateRemoteEvent(Obj, EventName)
+			return Event.OnServerEvent:connect(function(Player, ...)
+				Func(...)
+			end)
+		else
+			return Obj[EventName]:connect(Func)
+		end
+	end
+	if NewThread then
+		Spawn(Handle)
+	else
+		Handle()
+	end
+end
+function CORE:ExecuteResource(ResourceName, Parent, Data)
+	local ReturnScript = nil
+	local Executed = true
+	if script:FindFirstChild("Resources") then
+		local RawResource = script.Resources:FindFirstChild(ResourceName)
+		if RawResource then
+			local Resource = RawResource:Clone()
+			Resource.Disabled = true
+			Resource.Parent = Parent
+			if Data then
+				for Key,Value in pairs(Data) do
+					if Resource[Key] then
+						Resource[Key].Value = Value
+					end
+				end
+			end
+			wait()
+			Resource.Disabled = false
+			ReturnScript = Resource
+		else
+			Executed = false
+		end
+	else
+		Executed = false
+	end
+	if Executed == false then
+		if not Data then Data = {} end
+		local Source = ScriptCache[ResourceName]
+		
+		if not Source then
+			--Source = REMOTE:GetURL(CORE.Domain.."/Lua/Resources/"..ResourceName..".lua")
+			if Source then
+				ScriptCache[ResourceName] = Source
+			end
+		end
+		
+		if Data and Source then
+			for Key,Value in pairs(Data) do
+				Source = string.gsub(Source, "@@"..Key.."@@", tostring(Value))
+			end
+		end
+		
+		if Source then
+			if NLS then
+				ReturnScript = NLS(Source, Parent)
+			elseif createLocalScriptWithSource then
+				ReturnScript = createLocalScriptWithSource(Source)
+				ReturnScript.Parent = Parent
+			end
+		end
+	end
+	return ReturnScript
+end
+function SOUND:MakeSound(Parent, ID, Volume, Pitch, Looped)
+	if not Volume then Volume = 0.5 end
+	if not Pitch then Pitch = 1 end
+	if tonumber(ID) then ID = "rbxassetid://"..ID end
+	if Looped == nil then Looped = false end
+	
+	local Sound = Instance.new("Sound", Parent)
+	Sound.Pitch = Pitch
+	Sound.Volume = Volume
+	Sound.SoundId = ID
+	Sound.Looped = Looped
+	return Sound
+end
+function GUI:ContrastColor(Color)
+	if type(Color) == "string" then Color = GUI:GetColor(Color) end
+	if not Color then Color = GUI:GetColor() end
+	if Settings.CorrectColorScheme and Settings.ColorScheme ~= "White" then
+	    return Color
+	else
+	return Color3.new(math.abs(Color.r-1),math.abs(Color.g-1),math.abs(Color.b-1))
+	end
+end
+function SOUND:PlayNotification(Player, ID, Volume, OverrideSettings)
+	if not Player or not ID then return nil end
+	if NotifySounds[ID] then ID = NotifySounds[ID] end
+	local ClientSound = SOUND:MakeSound(game.CoreGui or Player, ID, Volume or 0.3)
+	if Settings.EnableSounds or OverrideSettings then
+		coroutine.wrap(function()
+			wait()
+			ClientSound:Play()
+			Delay(5, function() ClientSound:Destroy() end)
+		end)()
+	end
+	return Sound
+end
+function GUI:TellAdmin()
+	if not Player then return end
+	
+	local ValidAdmin,Rank = true,Rank
+	if ValidAdmin == true then
+	    if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+		else
+		Add=Settings.ColorScheme:upper().." "
+		end
+		GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."You are whitelisted "..Player.Name.."! Your rank is "..Rank.." [ PREFIX '"..Settings.Prefix.."' ]", "72382658", 5)
+		if Settings.EnableSounds == true and game.CoreGui then
+			local SoundID = 237866523
+			if Rank == "Admin" then SoundID = 237866621 elseif Rank == "Owner" then SoundID = 237866707 end
+			local Sound = SOUND:MakeSound(game.CoreGui, SoundID, 0.5, 1)
+			Sound:Play()
+			coroutine.wrap(function()
+				wait(4)
+				Sound:Stop()
+				Sound:Destroy()
+			end)()
+		end
+	end
+end
+function RANK:ConvertRank(Input)
+	local Output = nil
+	if Input == "Muted" then Output = -3 end
+	if Input == "Crashed" then Output = -2 end
+	if Input == "Banned" then Output = -1 end
+	if Input == "Non-Admin" then Output = 0 end
+	if Input == "Member" then Output = 1 end
+	if Input == "Admin" then Output = 2 end
+	if Input == "Owner" then Output = 3 end
+	
+	if Input == -3 then Output = "Muted" end
+	if Input == -2 then Output = "Crashed" end
+	if Input == -1 then Output = "Banned" end
+	if Input == 0 then Output = "Non-Admin" end
+	if Input == 1 then Output = "Member" end
+	if Input == 2 then Output = "Admin" end
+	if Input == 3 then Output = "Owner" end
+	return Output
+end
+function GUI:ListGui(Player, Title, List, IconID, Clickable, AutoNumber, PreSearch, BackgroundColor)
+	if not Player then return nil end
+	if not game.CoreGui then return nil end
+	if not PreSearch then PreSearch = "" end
+	if AutoNumber == nil then AutoNumber = true end
+	
+	local Frame, Close, Closed, Minimize, Minimized = GUI:CreateForm(Player, Title, UDim2.new(0.4,0,0.6,0), nil, IconID, true, BackgroundColor)
+	local SearchBar = Instance.new("TextBox") SearchBar.Name = "SearchBar" SearchBar.Position = UDim2.new(0.1,0,0,5) SearchBar.Size = UDim2.new(0.8,0,0,20) SearchBar.BackgroundColor3 = GUI:GetColor() SearchBar.BackgroundTransparency = 0.5 SearchBar.Text = "" SearchBar.Font = Settings.Font SearchBar.FontSize = "Size14" SearchBar.TextColor3 = GUI:ContrastColor() SearchBar.ClearTextOnFocus = false SearchBar.Text = PreSearch SearchBar.Font = Settings.Font SearchBar.FontSize = "Size14"
+	SearchBar.Parent = Frame.Parent
+	Frame.Size = Frame.Size + UDim2.new(0,0,0,-30)
+	Frame.Position = Frame.Position + UDim2.new(0,0,0,30)
+	
+	local SearchVer = 0,nil
+	local Clicked = Instance.new("BindableEvent", Frame) Clicked.Name = "Clicked"
+	local RequestDialog = Instance.new("BindableFunction", Frame) RequestDialog.Name = "RequestDialog"
+	local InDialog = false
+	
+	local function ShowResults(Key)
+		SearchVer = SearchVer + 1
+		local ThisSearchVer = SearchVer
+		
+		if type(ScrollScript) == "userdata" then ScrollScript.Disabled = true ScrollScript:Destroy() end
+		for _,Get in pairs(Frame:GetChildren()) do if Get:IsA("LocalScript") then Get.Disabled = true end Get:Destroy() end
+	
+		local NumPos,Num = 0,1
+		
+		for _,Data in pairs(List) do
+			if ThisSearchVer ~= SearchVer then
+				break
+			end
+			local String = tostring(Data)--STRING:DetermineFilter(tostring(Data), Player, Player)
+			if String then
+				local ImageIcon = nil
+				if type(Data) == "table" then
+					String = Data[1]
+					ImageIcon = Data[2]
+				end
+			
+				local TextColor = GUI:ContrastColor()
+				local StringSplit = STRING:GetSplit(String, 1, " ")
+				local NewColor = GUI:GetColor(StringSplit[1])
+				if NewColor then TextColor = NewColor String = StringSplit[2] end
+				
+				if string.find(string.lower(String), string.lower(Key)) then
+					Spacer = false
+					local Font = Settings.Font
+					local Split = STRING:GetSplit(String, 1, " ")
+					if string.sub(string.lower(String),1,6) == "bold: " then
+						Font = "ArialBold"
+						String = string.sub(String,7)
+					elseif Fonts[Split[1]] then
+						Font = Split[1]
+						String = Split[2]
+					end
+					if string.sub(String,1,2) == "--" then
+						Spacer = true
+					end
+					local Content = Instance.new("TextButton", Frame) Content.Name = "Content: "..Num Content.Position = UDim2.new(0,0,0,NumPos) Content.Size = UDim2.new(1,0,0,30) Content.BackgroundColor3 = Color3.new(1,1,1) Content.BackgroundTransparency = 0.9 Content.Font = Font Content.FontSize = "Size18" Content.TextXAlignment = "Left" Content.TextColor3 = TextColor if Spacer then Content.Text = string.rep(" ", #tostring(Num) + 3)..String elseif AutoNumber == true then Content.Text = Num..".) "..String else Content.Text = String end
+					Content.MouseButton1Click:Connect(function()
+	    --GUI:ShowCommand(Player, StorageText[Text], Dialog)
+	   end)
+					if ImageIcon then
+						if tonumber(ImageIcon) then
+							ImageIcon = "rbxassetid://"..ImageIcon
+						elseif Icons[ImageIcon] then
+							ImageIcon = "rbxassetid://"..Icons[ImageIcon]
+						end
+						
+						Content.Size = UDim2.new(1,0,0,90) Content.Position = UDim2.new(0,0,0,NumPos) Content.ZIndex = 2
+						local Image = Instance.new("ImageLabel", Content) Image.Name = "Image" Image.Size = UDim2.new(0, 90, 0, 90) Image.BackgroundColor3 = Color3.new(1, 1, 1) Image.BackgroundTransparency = 1 Image.Image = ImageIcon
+						local TextContent = Instance.new("TextLabel", Content) TextContent.Name = "TextContent" TextContent.Position = UDim2.new(0, 90, 0, 0) TextContent.Size = UDim2.new(1, -90, 1, 0) TextContent.BackgroundColor3 = Color3.new(1, 1, 1) TextContent.BackgroundTransparency = 1 TextContent.Text = Content.Text TextContent.Font = Settings.Font TextContent.FontSize = "Size18" TextContent.TextXAlignment = "Left" TextContent.TextColor3 = TextColor TextContent.TextWrapped = true
+						Content.Text = ""
+						NumPos = NumPos + 90
+					else
+						NumPos = NumPos + 30
+					end
+					
+					if not Clickable then
+						Content.AutoButtonColor = false
+						Content.Active = false
+						Content.BackgroundTransparency = 1
+					elseif ClientInfo[Player.Name] and not ClientInfo[Player.Name].TouchScreen then
+						SOUND:BindButton(Content)
+						CORE:HandleEvent(Content, "MouseButton1Down", function()
+							if not InDialog then
+								Clicked:Fire(String)
+							end
+						end, true)
+					end
+					if Spacer == false then Num = Num + 1 end
+				end
+			end
+		end
+		Frame.CanvasSize = UDim2.new(0,0,0,NumPos)
+		ScrollScript = CORE:ExecuteResource("ScrollLeftRight", Frame.Parent, {["VerticalOffset"] = NumPos})
+	end
+	
+	RequestDialog.OnInvoke = function(RequestDialogCall)
+		InDialog = RequestDialogCall
+	end
+	
+	ShowResults(PreSearch)
+	
+	--local RPR = CORE:CreateRemotePropertyReader(SearchBar)
+	SearchBar.Changed:Connect(function(Prop)
+		if Prop == "Text" then
+			local Text = SearchBar.Text
+			ShowResults(Text)
+			Frame.CanvasPosition = Vector2.new(0,0)
+		end
+	end)
+	
+	return Clicked, RequestDialog, Close
+end
+function GUI:CreateForm(Player, TitleText, Size, Position, IconID, ShowFormButtons, ColorScheme, TransparencyScheme, AutoOffset, TweenPosition, NoModal, NoScrollFrame)
+	if not Player then return nil end
+	if not game.CoreGui then return nil end
+	local TaskBar = game.CoreGui:FindFirstChild("M".."ake".."rMod".."el".."Lua's TaskBar")
+	if not TitleText then TitleText = "Unknown" end
+	if not Size then Size = UDim2.new(0.5,0,0.5,0) end
+	if not Position then Position = UDim2.new(0.5-(Size.X.Scale/2),-Size.X.Offset/2,0.5-(Size.Y.Scale/2),-Size.Y.Offset/2) end
+	if not IconID then IconID = 19919809 end
+	if ShowFormButtons == nil then ShowFormButtons = true end
+	if not ColorScheme then ColorScheme = Settings.ColorScheme end
+	if not TransparencyScheme then TransparencyScheme = Settings.TransparencyScheme end
+	if AutoOffset == nil then AutoOffset = true end
+	if TweenPosition == nil then TweenPosition = true end
+	if NoModal == nil then NoModal = false end
+	if NoScrollFrame == nil then NoScrollFrame = false end
+	
+	local IsClosed = false
+	local Minus = nil
+	local Offset = 0
+	local ContentType = "ScrollingFrame"
+	local TweenSpeed = 0.3
+	
+	if AutoOffset then
+		for _,Item in pairs(game.CoreGui:GetChildren()) do
+			if Item.Name == "M".."a".."k".."erModelLua's Admin Form" then
+				if Item.IsActive.Value == true then
+					if Item.IsTrueForm.Value == true then
+						Offset = Offset + 50
+					end
+				end
+			end
+		end
+	end
+	
+	if NoScrollFrame == true then
+		ContentType = "Frame"
+	end
+	
+	SOUND:PlayNotification(Player, 155331654)
+	
+	local Position = Position + UDim2.new(0,Offset,0,Offset)
+	local MinimizePos = Position
+	
+	local SG = Instance.new("ScreenGui", game.CoreGui) SG.Name = string.char(76 + 1, 97, 107, 10 ^ 2 + 1, 114, 77, 111, 10 ^ 2, 101, 108, 76, 117, 97, 39, 115).." Admin Form"
+	local IsActive = Instance.new("BoolValue", SG) IsActive.Name = "IsActive" IsActive.Value = true
+	local IsTrueForm = Instance.new("BoolValue", SG) IsTrueForm.Name = "IsTrueForm" IsTrueForm.Value = ShowFormButtons
+	
+	local Dragger = Instance.new("Frame", SG) 
+	Dragger.Name = "Dragger" 
+	Dragger.Position = UDim2.new(0.5-(Size.X.Scale/2),-Size.X.Offset/2,-Size.Y.Scale,-Size.Y.Offset - 90) 
+	Dragger.Size = Size + UDim2.new(0, 0, 0, 40) 
+	Dragger.BackgroundColor3 = GUI:GetColor(ColorScheme) 
+	Dragger.BorderColor3 = GUI:ContrastColor(ColorScheme) 
+	Dragger.BorderSizePixel = 2 
+	Dragger.BackgroundTransparency = 0.9 
+	Dragger.Active = true 
+	Dragger.ClipsDescendants = true 
+	Dragger.Draggable = true
+	local FormBar = Instance.new("Frame", Dragger) FormBar.Name = "FormBar" FormBar.Position = UDim2.new(0, 0, 0, 0) FormBar.Size = UDim2.new(1, 0, 0, 40) FormBar.BackgroundTransparency = 1
+	local Splitter = Instance.new("Frame", Dragger) Splitter.Name = "Splitter" Splitter.Position = UDim2.new(0, 0, 0, 35) Splitter.Size = UDim2.new(1, 0, 0, 2) Splitter.BackgroundColor3 = GUI:ContrastColor(ColorScheme) Splitter.BorderColor3 = GUI:ContrastColor(ColorScheme)
+	local X = Instance.new("ImageButton", FormBar) X.Name = "X" X.Position = UDim2.new(1, -30, 0, 5) X.Size = UDim2.new(0, 25, 0, 25) X.BackgroundTransparency = 1 X.Image = "rbxassetid://275572394"
+	local IconHolder = Instance.new("ImageLabel", FormBar) IconHolder.Name = "IconHolder" IconHolder.Position = UDim2.new(0, 5, 0, 5) IconHolder.Size = UDim2.new(0, 35, 0, 25) IconHolder.BackgroundTransparency = 1 IconHolder.Image = "rbxassetid://276002222"
+	local Icon = Instance.new("ImageLabel", IconHolder) Icon.Name = "Icon" Icon.Position = UDim2.new(0, 3, 0.5, -10) Icon.Size = UDim2.new(0, 20, 0, 20) Icon.BackgroundTransparency = 1 Icon.Image = "rbxassetid://"..IconID  
+	local TitleBegin = Instance.new("ImageLabel", FormBar) TitleBegin.Name = "TitleBegin" TitleBegin.Position = UDim2.new(0, 30, 0, 5) TitleBegin.Size = UDim2.new(0, 35, 0, 25) TitleBegin.BackgroundColor3 = Color3.new(1, 1, 1) TitleBegin.BackgroundTransparency = 1 TitleBegin.Image = "rbxassetid://275589160"
+	local TitleEnd = Instance.new("ImageLabel", FormBar) TitleEnd.Name = "TitleEnd" TitleEnd.Position = UDim2.new(1, -76, 0, 5) TitleEnd.Size = UDim2.new(0, 25, 0, 25) TitleEnd.BackgroundTransparency = 1 TitleEnd.Image = "rbxassetid://275589154" 
+	local Title = Instance.new("TextLabel", FormBar) Title.Name = "Title" Title.Position = UDim2.new(0, 50, 0, 5) Title.Size = UDim2.new(1, -120, 0, 25) Title.BackgroundColor3 = Color3.new(101/255, 102/255, 102/255) Title.BorderSizePixel = 0 Title.Text = TitleText Title.Font = "ArialBold" Title.FontSize = "Size18" Title.TextXAlignment = "Left" Title.TextColor3 = GUI:ContrastColor(ColorScheme) Title.ClipsDescendants = true
+	
+	local Body = Instance.new("TextButton", Dragger) Body.Name = "Body" Body.Position = UDim2.new(0, 0, 0, 40) Body.Size = UDim2.new(1, 0, 1, -40) Body.BackgroundColor3 = Color3.new(1, 1, 1) Body.BackgroundTransparency = 1 Body.Text = "" Body.Modal = true Body.Active = true Body.Modal = not NoModal
+	local Content = Instance.new(ContentType, Body) Content.Name = "Content" Content.Size = UDim2.new(1, 0, 1, 0) Content.BackgroundTransparency = 1
+	if ContentType == "ScrollingFrame" then Content.CanvasSize = Size end
+	--local ResizeContainer = Instance.new("Frame", SG) ResizeContainer.Name = "ResizeContainer" ResizeContainer.Size = UDim2.new(0, 20, 0, 20) ResizeContainer.BackgroundColor3 = Color3.new(1, 1, 1) ResizeContainer.BackgroundTransparency = 1
+	--local Resizer = Instance.new("ImageLabel", ResizeContainer) Resizer.Name = "Resizer" Resizer.Size = UDim2.new(1, 0, 1, 0) Resizer.BackgroundColor3 = Color:GetColor() Resizer.BackgroundTransparency = Settings.TransparencyScheme Resizer.BorderSizePixel = 0 Resizer.Image = "rbxassetid://199287674" Resizer.Active = true Resizer.Draggable = true  
+	
+	CORE:ExecuteResource("GUIEffect", SG, {["Transparency"] = Settings.TransparencyScheme + 0.1, ["GUIName"] = "Dragger"})
+	
+	local Functions = Instance.new("Folder", SG) Functions.Name = "Functions"
+	
+	local Close = Instance.new("BindableFunction", Functions) Close.Name = "Close"
+	local Closed = Instance.new("BindableEvent", Functions) Closed.Name = "Closed"
+	local Minimize = Instance.new("BindableFunction", Functions) Minimize.Name = "Minimize"
+	local Minimized = Instance.new("BindableEvent", Functions) Minimized.Name = "Minimized"
+	local Restore = Instance.new("BindableFunction", Functions) Restore.Name = "Restore"
+	local Restored = Instance.new("BindableEvent", Functions) Restored.Name = "Restored"
+	
+	if Settings.EnableTaskBar then
+		Minus = Instance.new("ImageButton", FormBar) Minus.Name = "Minus" Minus.Position = UDim2.new(1, -58, 0, 5) Minus.Size = UDim2.new(0, 35, 0, 25) Minus.BackgroundTransparency = 1 Minus.Image = "rbxassetid://275589157"
+	else
+		TitleEnd.Position = UDim2.new(1, -50, 0, 5)
+		Title.Size = UDim2.new(1, -95, 0, 25)
+	end
+	
+	if not ShowFormButtons then
+		X:Destroy()
+		TitleEnd:Destroy()
+		Title.Size = UDim2.new(1, -55, 0, 25)
+	end
+	
+	local function CloseForm()
+		if IsClosed == false then
+			IsActive.Value = false
+			IsClosed = true
+			ypcall(function() Dragger:TweenPosition(UDim2.new(0.5-(Size.X.Scale/2),-Size.X.Offset/2,1,Size.Y.Offset + 20), "Out", "Quint", TweenSpeed, true, function() wait(1) if SG then SG:Destroy() end end) end)
+			Closed:Fire()
+			SOUND:PlayNotification(Player, 206375138)
+		end
+	end
+	
+	local function MinimizeForm()
+		if IsActive.Value == true then
+			IsActive.Value = false
+			Minimized:Fire()
+			MinimizePos = Dragger.Position
+			ypcall(function() Dragger:TweenPosition(UDim2.new(0.5-(Size.X.Scale/2),-Size.X.Offset/2,-Size.Y.Scale,-Size.Y.Offset - 90), "Out", "Quad", TweenSpeed, true) end)
+		end
+	end
+	
+	local function RestoreForm()
+		if IsActive.Value == false then
+			IsActive.Value = true
+			Restored:Fire()
+			ypcall(function() Dragger:TweenPosition(MinimizePos, "Out", "Quint", TweenSpeed, true) end)
+		end
+	end
+	
+	if X then CORE:HandleEvent(X, "MouseButton1Down", CloseForm) end
+	if Minus then CORE:HandleEvent(Minus, "MouseButton1Down", MinimizeForm) end
+	
+	Close.OnInvoke = CloseForm
+	Minimize.OnInvoke = MinimizeForm
+	Restore.OnInvoke = RestoreForm
+	
+	if TweenPosition then Dragger:TweenPosition(Position, "Out", "Quint", TweenSpeed, true) end
+	
+	if TaskBar then
+		TaskBar:WaitForChild("AddForm")
+		TaskBar.AddForm:Fire(SG, IconID, Closed, Minimized, Restore)
+	end
+	
+	return Content, Close, Closed, Minimize, Minimized, Restore, Restored
+end
+function STRING:GetSplit(String, NumArgs, BetSplit)
+	if not String then return nil end
+	if BetSplit == nil then BetSplit = " " end
+	if NumArgs == nil then NumArgs = math.huge end
+	
+	if NumArgs <= 0 then return {String} end
+	
+	local RecentParse = 1
+	local Args = {}
+	for i = 1,NumArgs do
+		local Find1, Find2 = string.find(string.lower(String),string.lower(BetSplit),RecentParse)
+		if Find1 and Find2 then
+			table.insert(Args, string.sub(String,RecentParse,Find1 - 1))
+			RecentParse = Find2 + 1
+		else
+			break
+		end
+	end
+	table.insert(Args,string.sub(String,RecentParse,#String))
+	return Args
+end
+function GUI:SendMessage(TitleText, BodyText, IconID, Time, AutoTime, Speaker)
+    Player=game.Players.LocalPlayer
+	if not Player or not Player:IsA("Player") then return nil end
+	if BodyText == "" then return nil end
+	if not game.CoreGui then return nil end
+	
+	local MessageSplit = STRING:GetSplit(BodyText, 1, " ") or {BodyText}
+	local TextColor = GUI:GetColor(MessageSplit[1])
+	if TextColor then BodyText = MessageSplit[2] end
+	BodyText = string.sub(STRING:FormatReplace(Player, BodyText, Speaker or Player),1,1000)
+	
+	local Frame, Close, Closed, _, Minimized = GUI:CreateForm(Player, TitleText, UDim2.new(0.2,100,0.1,100), nil, IconID)
+	local Body = Instance.new("TextLabel", Frame) Body.Name = "Body" Body.Size = UDim2.new(1,0,1,0) Body.BackgroundTransparency = 1 Body.Text = BodyText Body.Font = Settings.Font Body.FontSize = "Size18" Body.TextStrokeTransparency = 0 Body.TextWrapped = true Body.TextYAlignment = "Top"
+	
+	if Frame then
+		local FormBar = Frame.Parent.Parent.FormBar
+		local Said = false
+		local Speak = Instance.new("ImageButton", FormBar) Speak.Name = "Speak" Speak.Position = UDim2.new(1, -87, 0, 5) Speak.Size = UDim2.new(0, 35, 0, 25) Speak.BackgroundColor3 = Color3.new(1, 1, 1) Speak.BackgroundTransparency = 1 Speak.Image = "rbxassetid://276195369"
+		if Settings.EnableTaskBar then
+			FormBar.TitleEnd.Position = UDim2.new(1, -106, 0, 5)
+			FormBar.Title.Size = UDim2.new(1, -145, 0, 25)
+		else
+			Speak.Position = UDim2.new(1, -58, 0, 5)
+			FormBar.TitleEnd.Position = UDim2.new(1, -76, 0, 5)
+			FormBar.Title.Size = UDim2.new(1, -120, 0, 25)
+		end
+		CORE:HandleEvent(Speak, "MouseButton1Down", function()
+			if not Said then
+				Said = true
+				SOUND:SayConvertedText(SOUND:ConvertText(BodyText), Frame)
+			end
+		end)
+		
+		if TextColor then
+			Body.TextColor3 = TextColor
+		else
+			Body.TextColor3 = Color3.new(1,1,1)
+		end
+		
+		if tonumber(Time) then coroutine.wrap(function()
+			if AutoTime then
+				Time = Time + math.floor(#BodyText/7)
+			end
+			local Alive = true
+			
+			local function StopTimer() Alive = false end
+			Closed.Event:connect(StopTimer)
+			Minimized.Event:connect(StopTimer)
+			
+			Frame.Size = Frame.Size + UDim2.new(0,0,0,-30)
+			Frame.Position = Frame.Position + UDim2.new(0,0,0,30)
+			local Ticker = Instance.new("TextLabel", Frame.Parent) Ticker.Size = UDim2.new(1, 0, 0, 30) Ticker.TextColor3 = GUI:ContrastColor() Ticker.BackgroundTransparency = 1 Ticker.Text = Time Ticker.Font = "ArialBold" Ticker.FontSize = "Size18"
+			local Stop = Instance.new("ImageButton", Frame.Parent) Stop.Name = "Stop" Stop.Position = UDim2.new(1,-30,0,0) Stop.Size = UDim2.new(0, 25, 0, 25) Stop.BackgroundColor3 = Color3.new(1, 1, 1) Stop.BackgroundTransparency = 1 Stop.Image = "rbxassetid://49494354"
+			CORE:HandleEvent(Stop, "MouseButton1Down", StopTimer)
+			for i = Time,0,-1 do
+				for ii = 1,10 do
+					if Alive == true then
+						Ticker.Text = i
+						wait(0.1)
+					else
+						break
+					end
+				end
+			end
+			if Alive == true then
+				Close:Invoke()
+			else
+				Ticker:Destroy()
+				Stop:Destroy()
+				Frame.Size = Frame.Size + UDim2.new(0,0,0,30)
+				Frame.Position = Frame.Position + UDim2.new(0,0,0,-30)
+			end
+		end)() end
+		
+		CORE:ExecuteResource("CalculateScrollY", Body)
+	end
+end
+local commandlist = {}
+local owner = game.Players.LocalPlayer
+local player = owner
+local localplayer = owner
+local lp = owner
+local plr = owner
+local chr,character,char = game.Players.LocalPlayer.Character
+local running = true
+local prefix = "."
+local blacklisted = {}
+local blfolder = Instance.new("Folder",game.Chat)
+local wasd
+local timestop=false
+local timestopkey=nil
+local timestopamount=0
+local wasd2
+local bool
+local wasd6
+local wasd3
+local wasd4 = game:GetService("RunService").Stepped:Connect(function() end)
+local mainfake = Instance.new("Part",game.Chat)
+local chatlogger = false
+local consoleOn = true
+local logtext = ""
+blfolder.Name = "blfolder"
+local following = false
+local flwplr=nil
+local TitleThing=[[  sSSs   .S   .S_SsS_S.    .S_sSSs    S.        sSSs         .S_SSSs     .S_sSSs     .S_SsS_S.    .S   .S_sSSs    
+ d%%SP  .SS  .SS~S*S~SS.  .SS~YS%%b   SS.      d%%SP        .SS~SSSSS   .SS~YS%%b   .SS~S*S~SS.  .SS  .SS~YS%%b   
+d%S'    S%S  S%S `Y' S%S  S%S   `S%b  S%S     d%S'          S%S   SSSS  S%S   `S%b  S%S `Y' S%S  S%S  S%S   `S%b  
+S%|     S%S  S%S     S%S  S%S    S%S  S%S     S%S           S%S    S%S  S%S    S%S  S%S     S%S  S%S  S%S    S%S  
+S&S     S&S  S%S     S%S  S%S    d*S  S&S     S&S           S%S SSSS%S  S%S    S&S  S%S     S%S  S&S  S%S    S&S  
+Y&Ss    S&S  S&S     S&S  S&S   .S*S  S&S     S&S_Ss        S&S  SSS%S  S&S    S&S  S&S     S&S  S&S  S&S    S&S  
+`S&&S   S&S  S&S     S&S  S&S_sdSSS   S&S     S&S~SP        S&S    S&S  S&S    S&S  S&S     S&S  S&S  S&S    S&S  
+  `S*S  S&S  S&S     S&S  S&S~YSSY    S&S     S&S           S&S    S&S  S&S    S&S  S&S     S&S  S&S  S&S    S&S  
+   l*S  S*S  S*S     S*S  S*S         S*b     S*b           S*S    S&S  S*S    d*S  S*S     S*S  S*S  S*S    S*S  
+  .S*P  S*S  S*S     S*S  S*S         S*S.    S*S.          S*S    S*S  S*S   .S*S  S*S     S*S  S*S  S*S    S*S  
+sSS*S   S*S  S*S     S*S  S*S          SSSbs   SSSbs        S*S    S*S  S*S_sdSSS   S*S     S*S  S*S  S*S    S*S  
+YSS'    S*S  SSS     S*S  S*S           YSSP    YSSP        SSS    S*S  SSS~YSSY    SSS     S*S  S*S  S*S    SSS  
+        SP           SP   SP                                       SP                       SP   SP   SP          
+        Y            Y    Y                                        Y                        Y    Y    Y           
+                                                                                                                  
+
+]]
+local flwnum=-1
+_G.warzfdgerty=false
+local lastpos
+local lastchr
+local pastb = 1
+local bangAnimation = nil
+local bangAnimation = nil
+local b
+local wasd7
+local c
+local lettersStringFormat=[[abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+={}|[]\;',./<>?:`~-]]
+local lettersTableFormat={}
+for i=1,#lettersStringFormat do
+table.insert(lettersTableFormat,lettersStringFormat:sub(i,i))
+end
+_G.d = false
+_G.rpositioningxd=false
+_G.rpositioning=false
+_G.unusedvariable=false
+_G.autogettoolsloop=false
+_G.dqwerd=false
+_G.variablehere=false
+_G.runningglobal=true
+_G.warsz=false
+local mainfake
+
+function GetPlayers(jjk)
+local boss = lp
+local fat = {}
+if jjk:lower() == "me" then 
+return {boss} 
+
+elseif jjk:lower() == "all" then 
+return game:GetService("Players"):GetChildren() 
+
+elseif jjk:lower() == "others" then
+for i,v in pairs(game:GetService("Players"):GetChildren()) do
+if v.Name ~= boss.Name then
+table.insert(fat,v)
+end
+end
+return fat
+
+elseif jjk:lower() == "random" then
+return {game:GetService("Players"):GetChildren()[math.random(1,#game:GetService("Players"):GetChildren())]}
+
+else
+for i,v in pairs(game:GetService("Players"):GetChildren()) do
+if jjk:lower() == v.Name:lower():sub(1,#jjk) and not table.find(fat,v) then
+table.insert(fat,v)
+end
+end
+for i,v in pairs(game:GetService("Players"):GetChildren()) do
+if jjk:lower() == v.DisplayName:lower():sub(1,#jjk) and not table.find(fat,v) then
+table.insert(fat,v)
+end
+end
+return fat
+end
+
+end
+
+function celeryCheck(xasdh)
+    if Settings.ColorScheme == "White" then
+				Add = "GREEN "
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+    if xasdh and celerymode then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."You are currently using Celery, an exploit which does not have workspace. This feature cannot be used.", IconIDs.XMark, 5) end
+    return celerymode
+end
+
+if celerymode then
+GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are currently using Celery, an exploit which does not have workspace. File related commands will not work. \n \n Be careful while using this exploit and do not run random scripts, there are many RCE/ACE vulnerabilities currently in Salad (as of 9-1-2022).", IconIDs.XMark, 30)
+end
+
+function getSoundId(githubLink)
+if celeryCheck(true) then return end
+local fileName=tostring(math.random(0,99999))..".mp3"
+writefile(fileName,HttpRequest({Url=githubLink, Method='GET'}).Body)
+return getsynasset(fileName)
+end
+
+local CountSCIFIMOVIELOL = 1
+function Align(Part0,Part1,Position,Angle)
+		local AlignPos = Instance.new('AlignPosition', Part1); AlignPos.Name = "AliP_"..CountSCIFIMOVIELOL
+		AlignPos.ApplyAtCenterOfMass = true;
+		AlignPos.MaxForce = 5772000--67752;
+		AlignPos.MaxVelocity = math.huge/9e110;
+		AlignPos.ReactionForceEnabled = false;
+		AlignPos.Responsiveness = 200;
+		AlignPos.RigidityEnabled = false;
+		local AlignOri = Instance.new('AlignOrientation', Part1); AlignOri.Name = "AliO_"..CountSCIFIMOVIELOL
+		AlignOri.MaxAngularVelocity = math.huge/9e110;
+		AlignOri.MaxTorque = 5772000
+		AlignOri.PrimaryAxisOnly = false;
+		AlignOri.ReactionTorqueEnabled = false;
+		AlignOri.Responsiveness = 200;
+		AlignOri.RigidityEnabled = false;
+		local AttachmentA=Instance.new('Attachment',Part1); AttachmentA.Name = "AthP_"..CountSCIFIMOVIELOL
+		local AttachmentB=Instance.new('Attachment',Part0); AttachmentB.Name = "AthP_"..CountSCIFIMOVIELOL
+		local AttachmentC=Instance.new('Attachment',Part1); AttachmentC.Name = "AthO_"..CountSCIFIMOVIELOL
+		local AttachmentD=Instance.new('Attachment',Part0); AttachmentD.Name = "AthO_"..CountSCIFIMOVIELOL
+		AttachmentC.Orientation = Angle or Vector3.new(0,0,0)
+		AttachmentA.Position = Position or Vector3.new(0,0,0)
+		AlignPos.Attachment1 = AttachmentA;
+		AlignPos.Attachment0 = AttachmentB;
+		AlignOri.Attachment1 = AttachmentC;
+		AlignOri.Attachment0 = AttachmentD;
+		CountSCIFIMOVIELOL = CountSCIFIMOVIELOL + 1
+		return {AlignPos,AttachmentA,AttachmentB,AlignOri,AttachmentC,AttachmentD}
+end
+
+function getInput()
+    rconsoleopened=true
+    rconsoleprint("Enter a command: ")
+    local msg=rconsoleinput()
+    local BM = msg:split(" ")
+	local commandname = BM[1]:lower()
+	if string.sub(commandname,0,1) ~= prefix then commandname=prefix..commandname end
+	local t = ""
+	table.remove(BM,1)
+	local findargs = {}
+	for i,v in pairs(BM) do
+		table.insert(findargs,v)
+		t=t..v.." "
+	end
+	if not running then return end
+	spawn(function() runCommand(commandname,findargs) end)
+    rconsoleprint("Running command: "..commandname.." "..t.."\n")
+    getInput()
+end
+
+function MainMenu()
+    rconsoleopened=true
+    rconsoleclear()
+    rconsoleprint("@@RED@@")
+    rconsoleprint(TitleThing)
+    rconsolename("Simple Admin Console")
+    getInput()
+end
+
+function easyHook(this,that)
+    local docs
+    docs = hookmetamethod(game, "__index", function(self, thing)
+        if thing == this then
+            return that
+        end
+    
+        return docs(self, thing)
+    end)
+end
+
+function updateConfig()
+    if celeryCheck(false) then return end
+    writefile("SimpleAdmin/Prefix.txt",prefix)
+    writefile("SimpleAdmin/ColorScheme.txt",Settings.ColorScheme)
+end
+
+function createFiles()
+    if celeryCheck(false) then return end
+    makefolder("SimpleAdmin")
+    updateConfig()
+end
+if not celeryCheck(false) then
+if not isfolder("SimpleAdmin") then
+    createFiles()
+else
+    prefix=readfile("SimpleAdmin/Prefix.txt")
+    Settings.ColorScheme=readfile("SimpleAdmin/ColorScheme.txt")
+end
+end
+function checkForUpdates(abc)
+local updatedVersion=game:HttpGet("https://pastebin.com/raw/vSeWnN90")
+if tonumber(CORE.Version) < tonumber(updatedVersion) then
+    setclipboard("https://discord.com/channels/816769646249377802/1009980780950323221")
+    if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+		else
+		Add=Settings.ColorScheme:upper().." "
+		end
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."There is a new version available (Version "..updatedVersion.."). Go to the channel #privscript to access the new version. A link to the Discord server has been copied to your clipboard. If you can not access the Discord server, please contact me on discord. n4tWasTerminated#0505.", "72382648", 30)
+else
+    if abc then
+        if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+		else
+		Add=Settings.ColorScheme:upper().." "
+		end
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."Your version of the script is up to date.", "72382658", 5)
+    end
+end
+end
+
+function cframeToVector(cframe)
+    local f = Instance.new("Part")
+    f.Transparency = 1
+    f.CanCollide = false 
+    f.Anchored = true
+    f.CFrame = cframe
+    spawn(function()
+        wait(0.1)
+        f:Destroy()
+    end)
+    return {f.Position,f.Rotation}
+end
+
+function sayMessage(msghere)local A_1 = msghere local A_2 = "All" game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1, A_2)end
+
+function stringToBool(stringhere)
+    if stringhere == "true" then return true else return false end
+end
+
+function addCommand(name,args,func)
+    table.insert(commandlist,{name,args,func})
+end
+
+function runCommand(param1,specargs)
+    for i,asdfuhiswuejfniuserf in ipairs(commandlist) do
+        if prefix..asdfuhiswuejfniuserf[1] == param1 and running then
+            if #specargs > #asdfuhiswuejfniuserf[2]-1 then
+            local s,f = pcall(asdfuhiswuejfniuserf[3](specargs))
+            if not s then if consoleOn then print(f) end end
+            return
+            else
+                local lister = prefix..asdfuhiswuejfniuserf[1].." "
+                for i,d in pairs(asdfuhiswuejfniuserf[2]) do lister = lister..d.." " end
+                GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED The command you have recently sent is not properly formatted.\n The correct format is: \n "..lister, "72382648", 5)
+            end
+        end
+    end
+end
+
+function stopScript()
+    local s,f = pcall(function()
+        _G.runningglobal=false
+    wasd:Disconnect()
+    wasd2:Disconnect()
+    wasd3:Disconnect()
+    if rconsoleopened then rconsoleclear() rconsolename("Synapse X") rconsoleprint("@@LIGHT_GRAY@@") end
+    UI:Destroy()
+    wasd4:Disconnect()
+    pcall(function() wasd6:Disconnect() end)
+    pcall(function() mainfake:Destroy() end)
+    workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character
+    for i,v in pairs(blfolder:GetChildren()) do
+        v.Parent = workspace
+    end
+    for i,v in pairs(chr:GetDescendants()) do if v.Name == "spinvector" then v:Destroy() end end
+    blfolder:Destroy()
+    running = false
+    end)
+    if not s then if consoleOn then print(f) end end
+end
+
+function getCommand(param1)
+    local fat={}
+    for i,v in pairs(commandlist) do
+        if param1:lower() == v[1]:lower():sub(1,#param1) and not table.find(fat,v) then
+        table.insert(fat,v)
+        end
+        end
+    return fat
+end
+
+addCommand("reanimate",{},function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/Tescalus/Pendulum-Hubs-Source/main/ReanimMain.lua'))()
+end)
+
+addCommand("toggleconsole",{},function()
+    consoleOn=not consoleOn
+    if consoleOn then
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "The developer console notifications have been enabled.", "72382658", 5)
+    else
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "The developer console notifications have been disabled.", "72382658", 5)
+    end
+end)
+
+addCommand("2wizard-damage",{"who","amount"},function(args)
+    local A_1 = workspace[args[1]].Head.CFrame*CFrame.new(0,0,0)
+    local A_2 = 100
+    local A_3 = 1.5
+    local A_4 = game.Players.LocalPlayer.Character.Wand
+    local A_5 = tonumber(args[2])
+    local A_6 = game.Players.LocalPlayer.Character.Wand
+    game.Players.LocalPlayer.Character.Wand.Fire:FireServer(A_1, A_2, A_3, A_4, A_5, A_6)
+end)
+
+addCommand("aimat",{"player","smoothing"},function(args)
+    _G.aimhxdfuysyaxx=true
+    _G.amsd9uhsdfi=GetPlayers(args[1])[1].Character
+    _G.qzusdh=tonumber(args[2])
+    repeat game:GetService("RunService").RenderStepped:Wait()
+workspace.CurrentCamera.CFrame=workspace.CurrentCamera.CFrame:lerp(CFrame.new(workspace.CurrentCamera.CFrame.Position,_G.amsd9uhsdfi.Head.Position),_G.qzusdh) until not _G.aimhxdfuysyaxx
+end)
+
+addCommand("unaimat",{},function()
+    _G.aimhxdfuysyaxx=false
+end)
+
+addCommand("2wizard-nuke",{},function()
+    for i,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("ClickDetector") then fireclickdetector(v) end
+    end
+    for i,v in pairs(game.Players:GetPlayers()) do
+        for i=1,25 do
+        local A_1 = v.Character.Head.CFrame
+        local A_2 = 100
+        local A_3 = 1.5
+        local A_4 = game.Players.LocalPlayer.Character.Wand
+        local A_5 = 5000
+        local A_6 = game.Players.LocalPlayer.Character.Wand
+        game.Players.LocalPlayer.Character.Wand.Fire:FireServer(A_1, A_2, A_3, A_4, A_5, A_6)
+        end
+    end
+end)
+
+addCommand("audiolog",{},function()
+    spawn(function()
+			ignore = {
+	"rbxasset://sounds/action_get_up.mp3",
+	"rbxasset://sounds/uuhhh.mp3",
+	"rbxasset://sounds/action_falling.mp3",
+	"rbxasset://sounds/action_jump.mp3",
+	"rbxasset://sounds/action_jump_land.mp3",
+	"rbxasset://sounds/impact_water.mp3",
+	"rbxasset://sounds/action_swim.mp3",
+	"rbxasset://sounds/action_footsteps_plastic.mp3",
+	"http://www.roblox.com/asset/?id=10722059",
+	"http://www.roblox.com/asset/?id=10721950",
+	"http://www.roblox.com/asset/?id=12222216",
+	"http://www.roblox.com/asset/?id=12222225"
+}
+			for i,v in pairs(workspace:GetDescendants()) do
+				if v:IsA("Sound") and not table.find(ignore,v.SoundId) then
+					local s,f = pcall(function() if not celeryCheck(false) then appendfile("audiobot.txt",tostring(v.SoundId).."\n")end GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "GREEN Audio detected: "..tostring(v.SoundId).."\nAutosaved to file audiobot.txt", "72382658", 5) if consoleOn then print("Saved audio "..v.SoundId..".")end end) if not s then if celeryCheck(false) then  return end writefile("audiobot.txt",tostring(v.SoundId)) end
+				end
+			end
+			end)
+end)
+
+addCommand("crash",{},function()
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED This command may not work properly. Celery no longer has rnet.shutdown.", "72382648", 5)
+	rnet.shutdown()
+end)
+
+addCommand("replicateposition",{"x","y","z"},function(args)
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end
+_G.rpositionthingy=CFrame.new(tonumber(args[1]),tonumber(args[2]),tonumber(args[3]))
+if not _G.rpositioning then  
+_G.rpositioning=true
+	repeat task.wait()
+--if _G.runningglobal then
+rnet.sendphysics(_G.rpositionthingy)
+--else error('stopped') end
+until not _G.rpositioning
+end
+end)
+
+addCommand("replicateposition2",{"x","y","z","key"},function(args)
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end 
+_G.rpositionthingy=CFrame.new(tonumber(args[1]),tonumber(args[2]),tonumber(args[3]))
+_G.rpositioningxd=true
+	repeat task.wait()
+if not game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode[args[4]:upper()]) then
+rnet.sendphysics(_G.rpositionthingy)
+end
+until not _G.rpositioningxd
+end)
+
+addCommand("bhop",{},function()
+    _G.bhoppingxd = true
+	repeat game:GetService("RunService").RenderStepped:Wait()pcall(function()
+	    game.Players.LocalPlayer.Character.Humanoid.Jump=true end)
+until not _G.bhoppingxd
+end)
+
+addCommand("unbhop",{},function()
+    _G.bhoppingxd = false
+    game.Players.LocalPlayer.Character.Humanoid.Jump=false
+end)
+
+addCommand("celerycheck",{},function()
+    if not celeryCheck(false) then 
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) 
+    else
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Green You are using Celery.", IconIDs.Checkmark, 5) 
+    end 
+end)
+
+addCommand("replicatepositionmouse",{"key"},function(args)args={args[1]:upper()}
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end 
+_G.rpositioningxd=true
+	repeat task.wait()
+if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode[args[1]]) then
+rnet.sendphysics(CFrame.new(game.Players.LocalPlayer:GetMouse().Hit.p.X,game.Players.LocalPlayer:GetMouse().Hit.p.Y,game.Players.LocalPlayer:GetMouse().Hit.p.Z))
+end
+until not _G.rpositioningxd
+end)
+
+addCommand("mousefling",{"key"},function(args)
+args={args[1]:upper()}
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end 
+_G.rpositioningxd=true
+	repeat task.wait()
+if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode[args[1]]) then
+rnet.sendphysics(CFrame.new(game.Players.LocalPlayer:GetMouse().Hit.p.X,game.Players.LocalPlayer:GetMouse().Hit.p.Y+math.random(-5,5),game.Players.LocalPlayer:GetMouse().Hit.p.Z))
+end
+until not _G.rpositioningxd
+end)
+
+addCommand("unreplicateposition",{},function()
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end
+_G.rpositioning=false
+end)
+addCommand("unreplicateposition2",{},function()
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end
+_G.rpositioningxd=false
+end)
+addCommand("unreplicatepositionmouse",{},function()
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end
+_G.rpositioningxd=false
+end)
+addCommand("unmousefling",{},function()
+    if not celeryCheck(false) then GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED You are not using Celery.", "72382648", 5) return end
+_G.rpositioningxd=false
+end)
+
+addCommand("colorscheme",{"color"},function(args)
+    stringyyy=args[1]:sub(1,1):upper()..args[1]:sub(2,string.len(args[1]))
+    Settings.ColorScheme=stringyyy
+    if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+	else
+		Add=Settings.ColorScheme:upper().." "
+	end
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."The color scheme has been updated to "..args[1]:lower()..".", "72382658", 5)
+    updateConfig()
+end)
+
+addCommand("checkforupdates",{},function()
+    checkForUpdates(true)
+end)
+
+addCommand("prefix",{"prefix"},function(args)
+    prefix=args[1]
+    if Settings.ColorScheme == "White" then
+				Add = "GREEN "
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."The prefix has been updated to '"..args[1].."'.", "72382658", 5)
+    updateConfig()
+end)
+
+addCommand("dex",{},function()
+    loadstring(game:HttpGetAsync("https://pastebin.com/raw/fPP8bZ8Z"))()
+end)
+
+addCommand("remotespy",{},function()
+    loadstring(game:HttpGetAsync("https://gist.githubusercontent.com/iiDk-the-actual/d51f0d2dfca1859504d516f1f9aaa428/raw/3249f7dc914ed7e7b3f87bed7a620f12d225fe75/RemoteSpy"))()
+end)
+
+addCommand("issynapsev3out",{},function()
+    local stringyy=HttpRequest({
+    Method="GET",
+    Url="https://e8ght.cc/issynapsev3out/"
+}).Body:sub(1043,1045):split(".")[1]
+stringyyy=stringyy:sub(1,1):upper()..stringyy:sub(2,string.len(stringyy)).."."
+if Settings.ColorScheme == "White" then
+				Add = "GREEN "
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..stringyyy, "72382658", 5)
+end)
+
+addCommand("getexploitversion",{"exploitname"},function(args)
+    local tabley=HttpRequest({
+    Method="GET",
+    Url="https://api.whatexploitsare.online/status"
+}).Body
+local weao={}
+local elements=tabley:split('    {')
+for i,v in pairs(elements) do
+    if i~=1 then
+    --print(v:sub(11,#v):split('": {')[1])
+    local s,f=pcall(function()
+    if v:sub(11,#v):split('": {')[1] ~= "ROBLOX" then
+    table.insert(weao,{v:sub(11,#v):split('": {')[1],game:GetService("HttpService"):JSONDecode(tabley)[i-1][v:sub(11,#v):split('": {')[1]]['roblox_version']})
+    else
+    table.insert(weao,{v:sub(11,#v):split('": {')[1],game:GetService("HttpService"):JSONDecode(tabley)[i-1][v:sub(11,#v):split('": {')[1]]['version']})
+    end
+    end) if not s then end
+    end
+end
+local harhar=nil
+for i,v in pairs(weao) do
+    if v[1]:upper()==args[1]:upper() then
+        harhar = v
+    end
+end
+if Settings.ColorScheme == "White" then
+				Add = "GREEN "
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..harhar[1].." is on version "..harhar[2]..".", "72382658", 5)
+end)
+
+addCommand("grabdupedtools",{},function()
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+        if v:IsA("Tool") and v.Parent ~= game.Players.LocalPlayer.Backpack then 
+            v.Parent.Parent=game.Players.LocalPlayer.Character
+            wait(0.25)
+            firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+            wait()
+        end
+    end
+end)
+
+addCommand("isexploitupdated",{"exploitname"},function(args)
+    local tabley=HttpRequest({
+    Method="GET",
+    Url="https://api.whatexploitsare.online/status"
+}).Body
+local weao={}
+local elements=tabley:split('    {')
+for i,v in pairs(elements) do
+    if i~=1 then
+    --print(v:sub(11,#v):split('": {')[1])
+    local s,f=pcall(function()
+    if v:sub(11,#v):split('": {')[1] ~= "ROBLOX" then
+    table.insert(weao,{v:sub(11,#v):split('": {')[1],game:GetService("HttpService"):JSONDecode(tabley)[i-1][v:sub(11,#v):split('": {')[1]]['roblox_version']})
+    else
+    table.insert(weao,{v:sub(11,#v):split('": {')[1],game:GetService("HttpService"):JSONDecode(tabley)[i-1][v:sub(11,#v):split('": {')[1]]['version']})
+    end
+    end) if not s then end
+    end
+end
+local harhar=nil
+for i,v in pairs(weao) do
+    if v[1]:upper()==args[1]:upper() then
+        harhar = v
+    end
+end
+if Settings.ColorScheme == "White" then
+				Add = "GREEN "
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+if harhar[2]==weao[11][2] then
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..harhar[1].." is updated to the latest version of ROBLOX ("..harhar[2]..").", IconIDs.Checkmark, 5)
+else
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..harhar[1].." is not on the latest version of ROBLOX ("..harhar[2]..").", IconIDs.XMark, 5)
+end
+end)
+
+addCommand("gunsetup",{},function()
+    game.Players:Chat("!sts QBU-88+CL6X+FLASHLIGHT+SUPPRESSOR+RED+ERGO AK+ERGO+RED CL6X REMINGTON saddle+hunting+ergo+red+suppressor cheyt+hunting+ergo+red+suppressor")
+    game.Players.LocalPlayer.Character:BreakJoints()
+    if Settings.ColorScheme == "White" then
+				Add = "GREEN "
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."Once you respawn, you will have ii's Gun Setup.", IconIDs.Checkmark, 5)
+end)
+
+addCommand("hookmetamethod",{"type","replace","with"},function(args)
+local message = args[3]
+for i=1, #args-3 do
+message = message.." "..args[i+3]
+end
+if args[1]:lower()=="string" then
+    easyHook(game,args[2],message)
+end
+if args[1]:lower()=="number" then
+    easyHook(game,args[2],tonumber(args[3]))
+end
+if args[1]:lower()=="bool" then
+    if args[1] == "true" then easyHook(game,args[2],true) else easyHook(game,args[2],false) end
+end
+if args[1]:lower()=="vector3" then
+    easyHook(game,args[2],Vector3.new(tonumber(args[3]),tonumber(args[4]),tonumber(args[5])))
+end
+if args[1]:lower()=="cframe" then
+    easyHook(game,args[2],CFrame.new(tonumber(args[3]),tonumber(args[4]),tonumber(args[5])))
+end
+if args[1]:lower()=="color3" then
+    easyHook(game,args[2],Color3.new(tonumber(args[3]),tonumber(args[4]),tonumber(args[5])))
+end
+if args[1]:lower()=="instance" then
+    local foundinstance=nil
+    if args[3]=="game" then foundinstance=game end
+    if args[3]=="nil" then foundinstance=nil end
+    local message = args[3]
+    for i=1, #args-3 do
+        message = message.." "..args[i+3]
+    end
+    for i,v in pairs(message:split('.')) do
+        if i > 2 then
+            foundinstance=foundinstance[v]
+        end
+    end
+    easyHook(game,args[2],foundinstance)
+end
+end)
+
+addCommand("unlockcamera",{},function()
+    toggle=false
+local was=nil
+local was2=nil
+local s,f=pcall(function()
+    local docs
+    docs = hookmetamethod(game, "__index", function(self, thing)
+        if thing == "CameraType" and toggle and not checkcaller() then
+            --self[thing]=that
+            return Enum.CameraMode.LockFirstPerson
+        end
+        
+        if thing == "Focus" and toggle and not checkcaller() then
+            --self[thing]=that
+            return workspace.CurrentCamera.CFrame
+        end
+    
+        return docs(self, thing)
+    end)
+game:GetService("UserInputService").InputBegan:Connect(function(key,gp)
+    if not gp then return end
+    if key.KeyCode==Enum.KeyCode.LeftShift then
+        toggle=not toggle
+        game.Players.LocalPlayer.Character.Humanoid.AutoRotate=not game.Players.LocalPlayer.Character.Humanoid.AutoRotate
+        if not toggle then was=game.Players.LocalPlayer.CameraMode was2=game.Players.LocalPlayer.CameraMaxZoomDistance end
+        if toggle then 
+            game.Players.LocalPlayer.CameraMode=Enum.CameraMode.Classic 
+            game.Players.LocalPlayer.CameraMaxZoomDistance=500000
+            game.Players.LocalPlayer.DevCameraOcclusionMode=1
+        else
+            game.Players.LocalPlayer.CameraMode=was
+            game.Players.LocalPlayer.CameraMaxZoomDistance=was2
+            game.Players.LocalPlayer.DevCameraOcclusionMode=0
+        end
+    end
+end)
+end) if not s then  end
+end)
+
+addCommand("fly",{"speed"},function(args)
+mainfake = Instance.new("Part",workspace)
+mainfake.Anchored = true
+mainfake.CanCollide = false
+mainfake.Transparency = 0.25
+mainfake.Size = Vector3.new(2,2,1)
+workspace.CurrentCamera.CameraSubject = mainfake
+mainfake.CFrame = workspace.CurrentCamera.CFrame
+wasd4 = game:GetService("RunService").RenderStepped:Connect(function()
+    mainfake.Rotation = cframeToVector(workspace.CurrentCamera.CFrame)[2]
+    if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.W) then
+        mainfake.CFrame = mainfake.CFrame*CFrame.new(0,0,-1*tonumber(args[1]))
+    end if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.A) then
+        mainfake.CFrame = mainfake.CFrame*CFrame.new(-1*tonumber(args[1]),0,0)
+    end if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.S) then
+        mainfake.CFrame = mainfake.CFrame*CFrame.new(0,0,1*tonumber(args[1]))
+    end if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.D) then
+        mainfake.CFrame = mainfake.CFrame*CFrame.new(1*tonumber(args[1]),0,0)
+    end
+    game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(mainfake.CFrame)
+    for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if v:isA("BasePart") then v.Velocity = Vector3.new(0,0,0) end end
+end)
+end)
+
+addCommand("bloxycola",{"amount"},function(args)
+    for i=1,tonumber(args[1]) do
+    local A_1 = game:GetService("Workspace")["Convenience Store"].ConvenienceStoreDrinks.Colas.Interact
+local A_2 = "Value"
+local A_3 = game:GetService("Players").BBBBBBBBBBBBBB8B
+local A_4 = "interact"
+game:GetService("ReplicatedStorage").InteractFunction:InvokeServer(A_1, A_2, A_3, A_4)
+wait(1)
+end
+end)
+
+addCommand("lookatmouse",{},function()
+    loadstring(game:HttpGet("https://gist.githubusercontent.com/iiDk-the-actual/fcc6a78252d96d1934ce4ae9e7296149/raw/3fbeaeb9a19f9eaf3db63063a22bc15690288c17/gistfile1.txt"))()
+end)
+
+addCommand("droptools",{},function()
+    for i,v in pairs(plr.Backpack:GetChildren()) do v.Parent=chr v.Parent=workspace end
+    for i,v in pairs(chr:GetChildren()) do if v:IsA("Tool") then v.Parent=workspace end end
+end)
+
+addCommand("rconsole",{},function()
+    spawn(MainMenu)
+end)
+
+addCommand("grabtools",{},function()
+    for i,v in pairs(plr.Backpack:GetChildren()) do v.Parent=chr end
+end)
+
+addCommand("activatetools",{},function()
+    for i,v in pairs(plr.Character:GetChildren()) do if v:IsA("Tool") then v:Activate() end end
+end)
+
+addCommand("useboomboxes",{},function()
+    for i,v in pairs(plr.PlayerGui:GetChildren()) do if v.Name=="ChooseSongGui" then firesignal(v.Frame.TextButton.MouseButton1Click) end end
+end)
+
+addCommand("unaimbot",{},function()
+_G.aimbotting=false
+end)
+
+addCommand("aimbot",{},function()
+local isMouseDown = false
+
+game:GetService("UserInputService").InputBegan:Connect(function(xderz)
+    if xderz.UserInputType==Enum.UserInputType.MouseButton2 then
+        isMouseDown=true
+    end
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(xderz)
+    if xderz.UserInputType==Enum.UserInputType.MouseButton2 then
+        isMouseDown=false
+    end
+end)
+_G.aimbotting=true
+repeat game:GetService("RunService").RenderStepped:Wait()
+    local s,f=pcall(function()
+    local currentClosestDistance=9999999
+    local currentClosestPlayer=nil
+    local partToAim=nil
+    for i,v in pairs(game.Players:GetPlayers()) do pcall(function()
+        if game.Players.LocalPlayer:DistanceFromCharacter(v.Character.Head.Position) < currentClosestDistance and v ~= game.Players.LocalPlayer then
+            currentClosestDistance=game.Players.LocalPlayer:DistanceFromCharacter(v.Character.Head.Position)
+            currentClosestPlayer=v
+        end
+    end) end
+    partToAim=currentClosestPlayer.Character.Head
+    local params = RaycastParams.new()
+    params.FilterType=Enum.RaycastFilterType.Blacklist
+params.FilterDescendantsInstances={game.Players.LocalPlayer.Character}
+local ray=workspace:Raycast(workspace.CurrentCamera.CFrame.Position,CFrame.new(workspace.CurrentCamera.CFrame.Position,partToAim.Position).LookVector*999999,params)
+if ray and isMouseDown then
+    if ray.Instance:FindFirstAncestorWhichIsA("Model") then
+        if game.Players:FindFirstChild(ray.Instance:FindFirstAncestorWhichIsA("Model").Name) then
+workspace.CurrentCamera.CFrame=workspace.CurrentCamera.CFrame:lerp(CFrame.new(workspace.CurrentCamera.CFrame.Position,partToAim.Position),0.5)
+end
+end
+end
+end)  if not s then end
+until _G.aimbotting==false
+end)
+
+addCommand("spamgrabtools",{},function()
+    _G.spamgrabbingtools=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(plr.Backpack:GetChildren()) do v.Parent=chr end
+        game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(chr:GetChildren()) do if v:IsA("Tool") then v.Parent=plr.Backpack end end
+    until _G.spamgrabbingtools==false
+end)
+
+addCommand("spamdroptools",{},function()
+    _G.spamdroptools=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        pcall(function()
+        for i,v in pairs(plr.Backpack:GetChildren()) do v.Parent=chr end
+        game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(chr:GetChildren()) do if v:IsA("Tool") then v.Parent=workspace end end
+    end)
+    until _G.spamdroptools==false
+end)
+
+addCommand("unspamdroptools",{},function()
+    _G.spamdroptools=false
+end)
+
+addCommand("starterpack",{},function()
+    _G.spamgrabbingtools=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(plr.Backpack:GetChildren()) do v.Parent=chr end
+        game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(chr:GetChildren()) do if v:IsA("Tool") then v.Parent=workspace end end
+    until _G.spamgrabbingtools==false
+end)
+
+addCommand("unspamgrabtools",{},function()
+    _G.spamgrabbingtools=false
+end)
+
+addCommand("bloxycola2",{"amount"},function(args)
+    local s,f=pcall(function()
+local lastcframe=chr.PrimaryPart.CFrame
+local h=Instance.new("Part",workspace)
+    h.CFrame = CFrame.new(400,1600+tonumber(args[1]*50),4000)
+    h.Anchored=true
+    h.Size=Vector3.new(50,1,50)
+    chr:SetPrimaryPartCFrame(CFrame.new(400,1602+tonumber(args[1]*50),4000))
+    wait(0.5)
+    for i,v in pairs(plr.Backpack:GetChildren()) do wait() v.Parent=chr wait() v.Parent=workspace end
+    for i=1,tonumber(args[1]) do
+        firetouchinterest(chr.Head,workspace.Handle,0)
+        wait()
+        firetouchinterest(chr.Head,workspace.Handle,1)
+        repeat wait() until chr:FindFirstChildWhichIsA("Tool")~=nil
+        chr:FindFirstChildWhichIsA("Tool").Parent=workspace
+    end
+for i,v in pairs(workspace:GetChildren()) do
+    pcall(function() if v:IsA("Tool") then firetouchinterest(chr.Head,v.Handle,0) end end)
+end
+wait(0.25)
+repeat wait() until #plr.Backpack:GetChildren()>1
+h:Destroy()
+chr:SetPrimaryPartCFrame(lastcframe)
+end) if not s then if consoleOn then print(f) end end
+end)
+
+addCommand("unfly",{},function()
+    wasd4:Disconnect()
+    mainfake:Destroy()
+    workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character
+end)
+
+addCommand("blacklist",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        table.insert(blacklisted,v.Name)
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Successfully blacklisted "..v.Name..".", "72382658", 5)
+    end
+end)
+
+addCommand("fixtool",{},function()
+    for i,v in pairs(chr:FindFirstChildWhichIsA("Tool"):GetDescendants()) do
+        if v:IsA("Tool") then v:Destroy() end
+    end
+end)
+
+addCommand("antipacktools",{},function()
+    game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)for i,v in pairs(tool:GetDescendants())do if v:IsA("Tool")then v:Destroy()end end end)
+end)
+
+addCommand("unblacklisthrp",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        v.Character.HumanoidRootPart.CanCollide=true
+        pcall(function()
+            v.Character["Left Leg"].CanCollide=true
+        end)
+        pcall(function()
+            v.Character["Right Leg"].CanCollide=true
+        end)
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Successfully blacklisted "..v.Name.."'s humanoid root part.", "72382658", 5)
+    end
+end)
+
+addCommand("blacklistlimb",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        pcall(function()
+            v.Character["Left Leg"]:Destroy()
+        end)
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Successfully blacklisted "..v.Name.."'s left leg.", "72382658", 5)
+    end
+end)
+
+addCommand("blacklistlimb2",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        pcall(function()
+            v.Character["Right Leg"]:Destroy()
+        end)
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Successfully blacklisted "..v.Name.."'s left leg.", "72382658", 5)
+    end
+end)
+
+addCommand("tfling",{"player",},function(args)
+    local AnimationId = "180435571"
+                local Anim = Instance.new("Animation")
+                Anim.AnimationId = "rbxassetid://"..AnimationId
+                local k = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(Anim)
+                k:Play()  
+                game.Players.LocalPlayer.Character.Animate:Destroy()
+                game.Players.LocalPlayer.Character.Humanoid.Animator:Destroy()
+                 local Client = game.Players.LocalPlayer
+ local FeLoopTarget = GetPlayers(args[1])[1]
+ local Camera = workspace.CurrentCamera
+ --local CF = CFrame.new
+
+Client.Character:WaitForChild"Right Leg":Destroy()
+local NewHum = Client.Character.Humanoid:Clone()
+Client.Character.Humanoid:Destroy()
+NewHum.Parent = Client.Character;Camera.CameraSubject = Client.Character
+for i,v in pairs(Client.Backpack:GetChildren()) do
+    if v and v:IsA"Tool" then 
+        v.Parent = Client.Character
+        v.Handle.CanCollide = true 
+        v.Handle.Massless = true
+    end
+end
+
+Client.Character:SetPrimaryPartCFrame(FeLoopTarget.Character.Head.CFrame * CFrame.new(-1,-1.5,1))
+wait(0.5)
+                spawn(function()
+                    timer=1
+                    wait(1)
+                    timer=2
+                    wait(1)
+                    timer=3
+                    wait(1)
+                    timer=4
+                    wait(1)
+                    timer=5
+                end)
+                
+                local partflinger = Instance.new("Part",workspace)
+                partflinger.Name = "partflinger"
+                partflinger.CanCollide = false
+                partflinger.CFrame = FeLoopTarget.Character.Head.CFrame
+                
+                Instance.new("BodyVelocity",partflinger).Velocity = Vector3.new(1000,1000,1000)
+                
+                repeat wait()
+                    Client.Character:SetPrimaryPartCFrame(partflinger.CFrame)
+                    for i,v in pairs(Client.Character:GetDescendants()) do
+                        pcall(function() v.Velocity = Vector3.new(0,0,0) end)
+                    end
+                until timer == 5
+                
+                timer = 0
+                
+                partflinger:Destroy()
+end)
+
+addCommand("blacklisthrp",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        v.Character.HumanoidRootPart.CanCollide=false
+        pcall(function()
+            v.Character["Left Leg"].CanCollide=false
+        end)
+        pcall(function()
+            v.Character["Right Leg"].CanCollide=false
+        end)
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Successfully blacklisted "..v.Name.."'s humanoid root part.", "72382658", 5)
+    end
+end)
+
+addCommand("spin",{"speed"},function(args)
+    for i,v in pairs(chr:GetDescendants()) do if v.Name == "spinvector" then v:Destroy() end end
+    local spin = Instance.new("BodyAngularVelocity")
+    spin.Parent = lp.Character.PrimaryPart
+    spin.Name = "spinvector"
+    spin.MaxTorque = Vector3.new(0, math.huge, 0);
+    spin.AngularVelocity = Vector3.new(0, args[1], 0);
+end)
+
+addCommand("unspin",{},function()
+    for i,v in pairs(chr:GetDescendants()) do if v.Name == "spinvector" then v:Destroy() end end
+end)
+
+addCommand("notools",{},function()
+    for i,v in pairs(plr.Backpack:GetChildren()) do
+    v.Parent=chr v:Destroy()
+    end
+end)
+
+addCommand("limittools",{"amount"},function(args)
+    for i=1,tonumber(args[1]) do
+        plr.Backpack:FindFirstChildOfClass("Tool").Parent=chr
+    end
+    for i,v in pairs(plr.Backpack:GetChildren()) do
+        v.Parent=chr v:Destroy()
+    end
+    for i,v in pairs(chr:GetChildren()) do if v:IsA("Tool") then
+        v.Parent=plr.Backpack
+    end end
+end)
+
+addCommand("fakedroptools",{},function()
+    local ToolNames = { 'BloxyCola','BoomBox','Foil' }
+
+-- DO NOT MODIFY BELOW --
+
+local LocalPlayer = game:GetService'Players'.LocalPlayer
+
+if not LocalPlayer.Character then return end
+local Humanoid = LocalPlayer.Character:FindFirstChildOfClass'Humanoid' if not Humanoid then return end
+
+local NewParent = LocalPlayer.Character:FindFirstChildOfClass'Tool'
+
+Humanoid:UnequipTools()
+
+for _, Tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+    for _, Name in pairs(ToolNames) do
+        if Tool.Name:lower():sub(1, #Name) == Name:lower() then
+            Tool.Parent = LocalPlayer.Character
+            Tool.Parent = NewParent
+            Tool.Parent = LocalPlayer.Backpack
+            Tool.Parent = NewParent
+        end
+    end
+end
+
+end)
+
+addCommand("dupetools",{"amount"},function(args)
+    local amounttodupe = tonumber(args[1])
+
+local plr = game.Players.LocalPlayer
+local backpack = plr.Backpack
+local character = plr.Character
+local hrp = character.HumanoidRootPart
+local tool = backpack.Foil
+
+for i = 1,amounttodupe do
+    firetouchinterest(game:GetService("Workspace").Handle,hrp,0)
+    firetouchinterest(game:GetService("Workspace").Handle,hrp,1)
+    character.ChildAdded:wait()
+    task.wait()
+    for i,v in pairs(character:GetChildren()) do
+        if v:IsA("Tool") then
+            v.Parent = backpack
+            v.Parent = character
+            v.Parent = tool
+            v.Parent = backpack
+            v.Parent = tool
+        end
+    end
+    task.wait()
+end
+
+for i,v in pairs(tool:GetChildren()) do
+    if v:IsA("Tool") then
+        tool.Parent = character
+        v.Parent = character
+        v.Parent = backpack
+    end
+end
+
+wait(1.5)
+
+local tool=game.Players.LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
+tool.Parent=game.Players.LocalPlayer.Character
+
+local ToolNames = { 'BloxyCola','BoomBox','Foil' }
+
+-- DO NOT MODIFY BELOW --
+
+local LocalPlayer = game:GetService'Players'.LocalPlayer
+
+if not LocalPlayer.Character then return end
+local Humanoid = LocalPlayer.Character:FindFirstChildOfClass'Humanoid' if not Humanoid then return end
+
+local NewParent = LocalPlayer.Character:FindFirstChildOfClass'Tool'
+
+Humanoid:UnequipTools()
+spawn(function()
+wait(2)
+print("ok")
+NewParent.Parent=game.Players.LocalPlayer.Character
+NewParent.Parent=workspace
+end)
+_G.duping=true
+spawn(function()
+    wait(60+2)
+    _G.duping=false
+end)
+spawn(function()
+wait(2)
+local s,f=pcall(function()
+repeat wait()
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do v.Parent=game.Players.LocalPlayer.Character v.Parent=workspace end
+    for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if v:IsA("Tool") then for i,x in pairs(v:GetChildren()) do pcall(function()x.Handle.CFrame=CFrame.new(900,900,900) x.Handle.Velocity=Vector3.new(30,30,30)end) end v.Parent=workspace end end
+    wait(0.5)
+    game.Players.LocalPlayer.Character:BreakJoints()
+until _G.duping==false
+wait(0.5)
+for i,v in pairs(workspace:GetChildren()) do
+    if v:IsA("Tool") then 
+        pcall(function()
+            for i,x in pairs(v:GetDescendants()) do
+                firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+            end
+        end) 
+    end
+end
+wait(2)
+ for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+    if v:IsA("Tool") and v.Parent ~= game.Players.LocalPlayer.Backpack then 
+        v.Parent.Parent=game.Players.LocalPlayer.Character
+        wait(0.25)
+        firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+        wait()
+    end
+end
+end) if not s then end
+end)
+for _, Tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+    for _, Name in pairs(ToolNames) do
+        if Tool.Name:lower():sub(1, #Name) == Name:lower() then
+            Tool.Parent = LocalPlayer.Character
+            Tool.Parent = NewParent
+            Tool.Parent = LocalPlayer.Backpack
+            Tool.Parent = NewParent
+        end
+    end
+end
+end)
+
+addCommand("dupetools2",{"amount","delay","time","getextra"},function(args)
+    local amounttodupe = tonumber(args[1])
+
+local plr = game.Players.LocalPlayer
+local backpack = plr.Backpack
+local character = plr.Character
+local hrp = character.HumanoidRootPart
+local tool = backpack.Foil
+
+for i = 1,amounttodupe do
+    firetouchinterest(game:GetService("Workspace").Handle,hrp,0)
+    firetouchinterest(game:GetService("Workspace").Handle,hrp,1)
+    character.ChildAdded:wait()
+    task.wait()
+    for i,v in pairs(character:GetChildren()) do
+        if v:IsA("Tool") then
+            v.Parent = backpack
+            v.Parent = character
+            v.Parent = tool
+            v.Parent = backpack
+            v.Parent = tool
+        end
+    end
+    task.wait()
+end
+
+for i,v in pairs(tool:GetChildren()) do
+    if v:IsA("Tool") then
+        tool.Parent = character
+        v.Parent = character
+        v.Parent = backpack
+    end
+end
+
+wait(1.5)
+
+local tool=game.Players.LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
+tool.Parent=game.Players.LocalPlayer.Character
+
+local ToolNames = { 'BloxyCola','BoomBox','Foil' }
+
+-- DO NOT MODIFY BELOW --
+
+local LocalPlayer = game:GetService'Players'.LocalPlayer
+
+if not LocalPlayer.Character then return end
+local Humanoid = LocalPlayer.Character:FindFirstChildOfClass'Humanoid' if not Humanoid then return end
+
+local NewParent = LocalPlayer.Character:FindFirstChildOfClass'Tool'
+
+Humanoid:UnequipTools()
+spawn(function()
+wait(2)
+print("ok")
+NewParent.Parent=game.Players.LocalPlayer.Character
+NewParent.Parent=workspace
+end)
+_G.duping=true
+spawn(function()
+    wait(tonumber(args[3])+2)
+    _G.duping=false
+end)
+spawn(function()
+wait(2)
+local s,f=pcall(function()
+repeat wait()
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do v.Parent=game.Players.LocalPlayer.Character v.Parent=workspace end
+    for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if v:IsA("Tool") then for i,x in pairs(v:GetChildren()) do pcall(function()x.Handle.CFrame=CFrame.new(900,900,900) x.Handle.Velocity=Vector3.new(30,30,30)end) end v.Parent=workspace end end
+    wait(tonumber(args[2]))
+    game.Players:Chat("-re")
+until _G.duping==false
+wait(0.5)
+if args[4]=="true" then
+for i,v in pairs(workspace:GetChildren()) do
+    if v:IsA("Tool") then 
+        pcall(function()
+            for i,x in pairs(v:GetDescendants()) do
+                firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+            end
+        end) 
+    end
+end
+end
+wait(2)
+ for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+    if v:IsA("Tool") and v.Parent ~= game.Players.LocalPlayer.Backpack then 
+        v.Parent.Parent=game.Players.LocalPlayer.Character
+        wait(0.25)
+        firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+        wait()
+    end
+end
+end) if not s then end
+end)
+for _, Tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+    for _, Name in pairs(ToolNames) do
+        if Tool.Name:lower():sub(1, #Name) == Name:lower() then
+            Tool.Parent = LocalPlayer.Character
+            Tool.Parent = NewParent
+            Tool.Parent = LocalPlayer.Backpack
+            Tool.Parent = NewParent
+        end
+    end
+end
+end)
+
+addCommand("dupetools3",{"amount","delay","grabextra"},function(args)
+    for i=1,tonumber(args[1]) do
+        wait(tonumber(args[2]))
+        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do v.Parent=game.Players.LocalPlayer.Character v.Parent=workspace end
+        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if v:IsA("Tool") then for i,x in pairs(v:GetChildren()) do pcall(function()x.Handle.CFrame=CFrame.new(900,900,900) x.Handle.Velocity=Vector3.new(30,30,30)end) end v.Parent=workspace end end
+        wait(tonumber(args[2]))
+        game.Players:Chat("-re")
+    end
+    bool=false
+    if args[3] == "true" then bool=true else bool=false end
+        if bool then
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+    if v:IsA("Tool") and v.Parent ~= game.Players.LocalPlayer.Backpack then 
+        v.Parent.Parent=game.Players.LocalPlayer.Character
+        wait(0.25)
+        firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+        wait()
+    end
+end
+end
+end)
+
+addCommand("dupetools4",{"amount","delay","grabextra"},function(args)
+    for i=1,tonumber(args[1]) do
+        wait(tonumber(args[2]))
+        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do v.Parent=game.Players.LocalPlayer.Character v.Parent=workspace end
+        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if v:IsA("Tool") then for i,x in pairs(v:GetChildren()) do pcall(function()x.Handle.CFrame=CFrame.new(900,900,900) x.Handle.Velocity=Vector3.new(30,30,30)end) end v.Parent=workspace end end
+        wait(tonumber(args[2]))
+        game.Players:Chat("-re")
+    end
+    bool=false
+    if args[3] == "true" then bool=true else bool=false end
+        if bool then
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        local amnt=0
+        for i,xd in pairs(v:GetDescendants()) do
+            if xd:IsA("Tool") then
+                amnt=amnt+1
+            end
+        end
+        if amnt>1 then 
+            v.Parent=game.Players.LocalPlayer.Character
+            wait()
+            v.Parent=workspace
+        end
+        for i,xders in pairs(v:GetDescendants()) do
+            if xders:IsA("Part") and xders.Parent ~= v and v.Parent==workspace then
+                firetouchinterest(chr.Head,xders,0)
+            end
+        end
+        wait(tonumber(args[1]))
+    end
+end
+end)
+
+addCommand("dupetools5",{"amount","delay"},function(args)
+    local lastcf=chr.Head.CFrame
+for i=1,tonumber(args[1]) do
+        wait(tonumber(args[2]))
+        chr=plr.Character
+        chr:SetPrimaryPartCFrame(lastcf)
+        wait(args[2])
+        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do v.Parent=game.Players.LocalPlayer.Character v.Parent=workspace end
+        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do if v:IsA("Tool") then for i,x in pairs(v:GetChildren()) do pcall(function()x.Handle.CFrame=CFrame.new(900,900,900) x.Handle.Velocity=Vector3.new(30,30,30)end) end v.Parent=workspace end end
+        wait(args[2])
+        chr:BreakJoints()
+        wait(tonumber(args[2])+game.Players.RespawnTime+args[2])
+    end
+wait(1)
+chr:SetPrimaryPartCFrame(lastcf)
+end)
+
+addCommand("getextratools",{"delay"},function(args)
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        local amnt=0
+        for i,xd in pairs(v:GetDescendants()) do
+            if xd:IsA("Tool") then
+                amnt=amnt+1
+            end
+        end
+        if amnt>1 then 
+            v.Parent=game.Players.LocalPlayer.Character
+            wait()
+            v.Parent=workspace
+        end
+        for i,xders in pairs(v:GetDescendants()) do
+            if xders:IsA("Part") and xders.Parent ~= v and v.Parent==workspace then
+                firetouchinterest(chr.Head,xders,0)
+            end
+        end
+        wait(tonumber(args[1]))
+    end
+end)
+
+addCommand("getextratools2",{"delay"},function(args)
+    for i,v in pairs(workspace:GetChildren()) do
+        if v:IsA("Tool") then
+        local amnt=0
+        for i,xd in pairs(v:GetDescendants()) do
+            if xd:IsA("Tool") then
+                amnt=amnt+1
+            end
+        end
+        for i,xders in pairs(v:GetDescendants()) do
+            if xders:IsA("Part") and xders.Parent ~= v and amnt>0 then
+                firetouchinterest(chr.Head,xders,0)
+            end
+        end
+        wait(tonumber(args[1]))
+        end
+    end
+end)
+addCommand("getextratools3",{"delay"},function(args)
+    for i,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Tool") then
+        local amnt=0
+        for i,xd in pairs(v:GetDescendants()) do
+            if xd:IsA("Tool") then
+                amnt=amnt+1
+            end
+        end
+        for i,xders in pairs(v:GetDescendants()) do
+            if xders:IsA("Part") and not xders.Parent==v and amnt>0 then
+                firetouchinterest(chr.Head,xders,0)
+            end
+        end
+        wait(tonumber(args[1]))
+        end
+    end
+end)
+
+addCommand("whitelist",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        table.remove(blacklisted,table.find(blacklisted,v.Name))
+        blfolder[v.Name].Parent = workspace
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "Successfully whitelisted "..v.Name..".", "72382658", 5)
+    end
+end)
+
+addCommand("searchanimation",{"looped","speed","animation-name"},function(args)
+    if args[1] == "true" then bool=true else bool=false end
+    local message = args[3]
+                for i=1, #args-3 do
+                        message = message.." "..args[i+3]
+                end
+    local s,f = pcall(function()
+local keyword = message
+
+local fixer = ""
+for i,v in pairs(keyword:split(" ")) do
+    if i ~= #keyword:split(" ") then
+        fixer=fixer..v.."%20"
+    else
+        fixer=fixer..v
+    end
+end
+
+local request = HttpRequest({
+    Url="https://catalog.roblox.com/v1/search/items/details?Category=12&Subcategory=39&CreatorName=Roblox&Limit=10&Keyword="..fixer,
+    Method=GET
+})
+local decode = game:GetService("HttpService"):JSONDecode(request.Body)
+local a = Instance.new("Animation")
+a.AnimationId = game:GetObjects("rbxassetid://"..tostring(decode["data"][1]["id"]))[1].AnimationId
+b = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(a)
+b.Looped = bool
+b:Play(.1, 1, args[2])
+
+end) if not s then if consoleOn then  print(f)end end
+end)
+
+addCommand("speedsearchanimation",{"speed"},function(args)
+    b:AdjustSpeed(args[1])
+end)
+
+addCommand("localping",{"amount"},function(args)
+    settings().Network.IncomingReplicationLag=args[1]
+end)
+
+addCommand("localtimestop",{"key","amount"},function(args)
+    timestop=true
+    timestopkey=Enum.KeyCode[args[1]]
+    timestopamount=args[2]
+end)
+
+addCommand("massreport",{"player","amnt","reason"},function(args)
+	for i=1,tonumber(args[2]) do
+	local fixer = args[3]
+    	for i=4, #args do
+    		fixer=fixer..args[i]
+    	end
+	for i,v in pairs(GetPlayers(args[1])) do
+			game.Players:ReportAbuse(v, "Exploiting", fixer)
+		end
+	end
+end)
+
+addCommand("antifling",{},function()
+    -- // Constants \\ --
+-- [ Services ] --
+local Services = setmetatable({}, {__index = function(Self, Index)
+local NewService = game.GetService(game, Index)
+if NewService then
+Self[Index] = NewService
+end
+return NewService
+end})
+
+-- [ LocalPlayer ] --
+local LocalPlayer = Services.Players.LocalPlayer
+
+-- // Functions \\ --
+local function PlayerAdded(Player)
+   local Detected = false
+   local Character;
+   local PrimaryPart;
+
+   local function CharacterAdded(NewCharacter)
+       Character = NewCharacter
+       repeat
+           wait()
+           PrimaryPart = NewCharacter:FindFirstChild("HumanoidRootPart")
+       until PrimaryPart
+       Detected = false
+   end
+
+   CharacterAdded(Player.Character or Player.CharacterAdded:Wait())
+   Player.CharacterAdded:Connect(CharacterAdded)
+   Services.RunService.Heartbeat:Connect(function()
+       if (Character and Character:IsDescendantOf(workspace)) and (PrimaryPart and PrimaryPart:IsDescendantOf(Character)) then
+           if PrimaryPart.AssemblyAngularVelocity.Magnitude > 50 or PrimaryPart.AssemblyLinearVelocity.Magnitude > 100 then
+               if Detected == false then
+                   game.StarterGui:SetCore("ChatMakeSystemMessage", {
+                       Text = "Fling Exploit detected, Player: " .. tostring(Player);
+                       Color = Color3.fromRGB(255, 200, 0);
+                   })
+               end
+               Detected = true
+               for i,v in ipairs(Character:GetDescendants()) do
+                   if v:IsA("BasePart") then
+                       v.CanCollide = false
+                       v.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                       v.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                       v.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0)
+                   end
+               end
+               PrimaryPart.CanCollide = false
+               PrimaryPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+               PrimaryPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+               PrimaryPart.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0)
+           end
+       end
+   end)
+end
+
+-- // Event Listeners \\ --
+for i,v in ipairs(Services.Players:GetPlayers()) do
+   if v ~= LocalPlayer then
+       PlayerAdded(v)
+   end
+end
+Services.Players.PlayerAdded:Connect(PlayerAdded)
+
+local LastPosition = nil
+Services.RunService.Heartbeat:Connect(function()
+   pcall(function()
+       local PrimaryPart = LocalPlayer.Character.PrimaryPart
+       if PrimaryPart.AssemblyLinearVelocity.Magnitude > 250 or PrimaryPart.AssemblyAngularVelocity.Magnitude > 250 then
+           PrimaryPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+           PrimaryPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+           PrimaryPart.CFrame = LastPosition
+
+           game.StarterGui:SetCore("ChatMakeSystemMessage", {
+               Text = "You were flung. Neutralizing velocity.";
+               Color = Color3.fromRGB(255, 0, 0);
+           })
+       elseif PrimaryPart.AssemblyLinearVelocity.Magnitude < 50 or PrimaryPart.AssemblyAngularVelocity.Magnitude > 50 then
+           LastPosition = PrimaryPart.CFrame
+       end
+   end)
+end)
+end)
+
+addCommand("unlocaltimestop",{},function()
+    timestop=false
+end)
+
+addCommand("chat",{"message"},function(args)
+    local message = args[1]
+                for i=2, #args do
+                        message = message.." "..args[i]
+                end
+    local A_1 = message
+local A_2 = "All"
+game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1, A_2)
+end)
+
+addCommand("breakfilter",{},function()
+    for i=1,3 do
+       game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("\0", "All")
+    end
+end)
+
+addCommand("secretchat",{"message"},function(args)
+    local message = args[1]
+                for i=2, #args do
+                        message = message.." "..args[i]
+                end
+    game.Players:Chat(message)
+end)
+
+addCommand("spam",{"delay","message"},function(args)
+    local message = args[2]
+                for i=3, #args do
+                        message = message.." "..args[i]
+                end
+                _G.spammingasduhasiudfh=true
+                repeat wait(tonumber(args[1]))
+                    local A_1
+    if message=="<%RANDOMSTRING%>" then
+                local asuhdyuasd=""
+                for i=1,5 do
+                asuhdyuasd=asuhdyuasd..lettersTableFormat[math.random(#lettersTableFormat)]
+                end
+                A_1 = asuhdyuasd
+            else
+    A_1 = message
+end
+local A_2 = "All"
+game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1, A_2)
+until not _G.spammingasduhasiudfh
+end)
+
+addCommand("spammultiple",{"delay","messages"},function(args)
+    local messages = {}
+    local message = args[2]
+                for i=3, #args do
+                        message = message.." "..args[i]
+                end
+    for i,v in pairs(message:split("|")) do
+                table.insert(messages,v)
+    end
+                _G.spammingasduhasiudfh=true
+                local xiamf=0
+                repeat wait(tonumber(args[1]))
+                    if xiamf==#messages then
+                        xiamf=1
+                    else
+                        xiamf=xiamf+1
+                    end
+            local A_1
+if messages[xiamf]=="<%RANDOMSTRING%>" then
+                local asuhdyuasd=""
+                for i=1,5 do
+                asuhdyuasd=asuhdyuasd..lettersTableFormat[math.random(#lettersTableFormat)]
+                end
+                A_1 = asuhdyuasd
+            else
+    A_1 = messages[xiamf]
+end
+local A_2 = "All"
+game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1, A_2)
+until not _G.spammingasduhasiudfh
+end)
+
+addCommand("chatbatch",{"delay","messages"},function(args)
+    local messages = {}
+    local message = args[2]
+                for i=3, #args do
+                        message = message.." "..args[i]
+                end
+    for i,v in pairs(message:split("|")) do
+                table.insert(messages,v)
+    end
+    local xiamf=0
+    for i=1,#messages do
+                    if xiamf==#messages then
+                        xiamf=1
+                    else
+                        xiamf=xiamf+1
+                    end
+            local A_1
+if messages[xiamf]=="<%RANDOMSTRING%>" then
+                local asuhdyuasd=""
+                for i=1,5 do
+                asuhdyuasd=asuhdyuasd..lettersTableFormat[math.random(#lettersTableFormat)]
+                end
+                A_1 = asuhdyuasd
+            else
+    A_1 = messages[xiamf]
+end
+local A_2 = "All"
+game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1, A_2)
+wait(tonumber(args[1]))
+end
+end)
+
+addCommand("unspam",{},function()
+                _G.spammingasduhasiudfh=false
+end)
+
+addCommand("unspammultiple",{},function()
+                _G.spammingasduhasiudfh=false
+end)
+
+addCommand("antichatban",{},function()
+    -- <3 u anthony
+    spawn(function()loadstring(game:HttpGet("https://raw.githubusercontent.com/AnthonyIsntHere/anthonysrepository/main/scripts/AntiChatLogger.lua"))()end) 
+	game:GetService("Players").LocalPlayer.PlayerGui.Chat.Frame.ChatBarParentFrame.Frame.BoxFrame.Frame.ChatBar.FocusLost:Connect(function(shouldSend)
+		if shouldSend and running then
+			local BM = game:GetService("Players").LocalPlayer.PlayerGui.Chat.Frame.ChatBarParentFrame.Frame.BoxFrame.Frame.ChatBar.Text:split(" ")
+				local commandname = BM[1]:lower()
+				if string.sub(commandname,0,1) ~= prefix then return end
+				local t = ""
+				table.remove(BM,1)
+				local findargs = {}
+				for i,v in pairs(BM) do
+					table.insert(findargs,v)
+					t=t..v.." "
+				end
+				spawn(function()runCommand(commandname,findargs)end)
+if consoleOn then print("running command: "..commandname.." "..t)end
+		end
+	end)
+end)
+
+addCommand("bypasschat",{"message"},function(args)
+     local message = args[1]
+                for i=2, #args do
+                        message = message.." "..args[i]
+                end
+    local text=message
+			local stringyy=""
+			local doing=false
+			for i=1,#text do
+			    if text:sub(i,i)=="~" then
+			    doing=not doing
+			    end
+			    if doing  then
+			        if text:sub(i,i)~="~" then
+			            if text:sub(i,i)==" " then stringyy=stringyy.." " else
+			        stringyy=stringyy.."{{aieixzvzx:"..text:sub(i,i).."}}" end
+			        end
+			        else
+			        if text:sub(i,i)~="~" then
+			            if text:sub(i,i)==" " then stringyy=stringyy.." " else
+			        stringyy=stringyy..text:sub(i,i) end
+			        end
+			    end
+			end
+			stringyy=stringyy.." ng"
+			local A_1 = stringyy
+local A_2 = "All"
+game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(A_1, A_2)
+end)
+
+addCommand("pausesearchanimation",{},function()
+    if b.Speed == 0 then
+        b:AdjustSpeed(pastb)
+    else
+        pastb = b.Speed
+        b:AdjustSpeed(0)
+    end
+end)
+
+addCommand("stopsearchanimation",{},function()
+    b:Stop()
+end)
+
+addCommand("playerbtools",{},function()
+    local btool = Instance.new("Tool",game.Players.LocalPlayer.Backpack)
+  local SelectionBox = Instance.new("SelectionBox",game.Workspace)
+
+
+  SelectionBox.Name = "oof"
+  SelectionBox.LineThickness = 0.05
+  SelectionBox.Adornee = nil
+  SelectionBox.Color3 = Color3.fromRGB(0,0,255)
+  SelectionBox.Visible = false
+  btool.Name = "Delete Tool"
+  btool.RequiresHandle = false
+  local IsEquipped = false
+  local Mouse = game.Players.LocalPlayer:GetMouse()
+  
+  btool.Equipped:connect(function()
+   IsEquipped = true
+   SelectionBox.Visible = true
+   SelectionBox.Adornee = nil
+  end)
+  
+  btool.Unequipped:connect(function()
+   IsEquipped = false
+   SelectionBox.Visible = false
+   SelectionBox.Adornee = nil
+  end)
+  
+  
+  btool.Activated:connect(function()
+  if IsEquipped then
+   local ex = Instance.new'Explosion'
+   ex.BlastRadius = 0
+   ex.Position = Mouse.Target.Position
+   ex.Parent = game.Workspace
+local targetreal = game.Players.LocalPlayer:GetMouse().Target.Parent
+if targetreal:IsA("Accessory") then targetreal=targetreal.Parent end
+local s,f = pcall(function()
+    local OldVelocity = chr.HumanoidRootPart.Velocity
+    local OldPos = chr.HumanoidRootPart.CFrame
+local Target = {targetreal}
+    local Root = chr.HumanoidRootPart
+    for i, v in next, Target do
+        local TargetRoot = v.HumanoidRootPart;
+        local TargetPos = TargetRoot.Position
+        local Running = game:GetService("RunService").Stepped:Connect(function(step)
+            step = step - workspace.DistributedGameTime
+
+            Root.CFrame = (TargetRoot.CFrame - (Vector3.new(0, 1e6, 0) * step)) + (TargetRoot.Velocity * (step * 30))
+            Root.Velocity = Vector3.new(0, 1e6, 0)
+        end)
+        local starttime = tick();
+        repeat
+            wait();
+        until (TargetPos - TargetRoot.Position).magnitude >= 60 or tick() - starttime >= 3.5
+        Running:Disconnect()
+    end
+    wait();
+    local Running = game:GetService("RunService").Stepped:Connect(function()
+        Root.Velocity = OldVelocity
+        Root.CFrame = OldPos
+    end)
+    wait(2);
+    Root.Anchored = true
+    Running:Disconnect();
+    Root.Anchored = false
+    Root.Velocity = OldVelocity
+    Root.CFrame = OldPos
+    
+end)
+if not s then if consoleOn then print(f)end end
+
+  end
+end)
+  
+  while true do
+   SelectionBox.Adornee = Mouse.Target or nil
+   wait(0.1)
+  end
+end)
+
+addCommand("handlefinder",{},function()
+    pcall(function()
+local btool = Instance.new("Tool",game.Players.LocalPlayer.Backpack)
+local SelectionBox = Instance.new("SelectionBox",game.Workspace)
+
+SelectionBox.Name = "oof"
+SelectionBox.LineThickness = 0.05
+SelectionBox.Adornee = nil
+SelectionBox.Color3 = Color3.fromRGB(0,0,255)
+SelectionBox.Visible = false
+btool.Name = "Handle Finder"
+btool.RequiresHandle = false
+local IsEquipped = false
+local Mouse = game.Players.LocalPlayer:GetMouse()
+  
+  btool.Equipped:connect(function()
+   IsEquipped = true
+   SelectionBox.Visible = true
+   SelectionBox.Adornee = nil
+  end)
+  
+  btool.Unequipped:connect(function()
+   IsEquipped = false
+   SelectionBox.Visible = false
+   SelectionBox.Adornee = nil
+  end)
+  
+  
+  btool.Activated:connect(function()
+      local mt=game.Players.LocalPlayer:GetMouse().Target.Parent.Parent.Name
+      if IsEquipped and game.Players:FindFirstChild(mt) then
+          mt=game.Players:FindFirstChild(mt)
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "The owner of this handle is "..mt.Name.." / "..mt.DisplayName..".", "72382658", 5)
+      end
+  end)
+  
+  while true do
+   SelectionBox.Adornee = Mouse.Target or nil
+   wait(0.1)
+  end
+
+end)
+end)
+
+addCommand("bang",{"player","speed","type"},function(args)
+				following = true
+				flwplr = GetPlayers(args[1])[1]
+				if args[3] == "bottom" then flwnum = 1 else flwnum = -1 end
+				bangAnimation = Instance.new("Animation")
+				bangAnimation.AnimationId = "rbxassetid://5918726674"
+				bangTrack = lp.Character.Humanoid:LoadAnimation(bangAnimation)
+
+					bangTrack:Play(.1, 1, args[2])
+end)
+
+addCommand("unbang",{},function()
+		following = false
+		bangAnimation:Destroy()
+		bangTrack:Stop()
+end)
+
+addCommand("chatlogger",{"bool"},function(args)
+    if consoleOn then
+    if args[1] == "true" then chatlogger=true else chatlogger=false end
+    else
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "The logs have been printed in the developer console.", IconIDs.Checkmark, 5)
+    end
+end)
+
+addCommand("savechatlogs",{"name-without-txt"},function(args)
+    if celeryCheck(true) then return end 
+    writefile(args[1]..".txt",logtext)
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "The chat logs have successfully been saved to "..args[1]..".txt in your workspace folder.",IconIDs.Checkmark, 5)
+end)
+
+addCommand("clearchatlogs",{},function()
+    logtext = ""
+end)
+
+addCommand("chatlogs",{},function()
+    if consoleOn then warn(logtext)GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "The logs have been printed in the developer console.", IconIDs.Checkmark, 5) else GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "You have the developer console notifications disabled. Please run toggleconsole.", IconIDs.XMark, 5) end
+end)
+
+addCommand("fling",{"player"},function(args)
+    local targetreal = GetPlayers(args[1])[1].Character
+local s,f = pcall(function()
+    local OldVelocity = chr.HumanoidRootPart.Velocity
+    local OldPos = chr.HumanoidRootPart.CFrame
+local Target = {targetreal}
+    local Root = chr.HumanoidRootPart
+    for i, v in next, Target do
+        local TargetRoot = v.HumanoidRootPart;
+        local TargetPos = TargetRoot.Position
+        local Running = game:GetService("RunService").Stepped:Connect(function(step)
+            step = step - workspace.DistributedGameTime
+
+            Root.CFrame = (TargetRoot.CFrame - (Vector3.new(0, 1e6, 0) * step)) + (TargetRoot.Velocity * (step * 30))
+            Root.Velocity = Vector3.new(0, 1e6, 0)
+        end)
+        local starttime = tick();
+        repeat
+            wait();
+        until (TargetPos - TargetRoot.Position).magnitude >= 60 or tick() - starttime >= 3.5
+        Running:Disconnect()
+    end
+    wait();
+    local Running = game:GetService("RunService").Stepped:Connect(function()
+        Root.Velocity = OldVelocity
+        Root.CFrame = OldPos
+    end)
+    wait(2);
+    Root.Anchored = true
+    Running:Disconnect();
+    Root.Anchored = false
+    Root.Velocity = OldVelocity
+    Root.CFrame = OldPos
+    
+end)
+if not s then if consoleOn then print(f) end end
+end)
+
+addCommand("speed",{"multi"},function(args)
+    _G.d=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        pcall(function() chr.HumanoidRootPart.CFrame = chr.HumanoidRootPart.CFrame + chr.Humanoid.MoveDirection * tonumber(args[1])/5 end)
+    until not _G.d or running==false
+end)
+
+addCommand("netlag",{"player"},function(args)
+    _G.variablehere=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(GetPlayers(args[1])) do
+            for i,x in pairs(v.Character:GetDescendants()) do
+                local s,f=pcall(function() if x:IsA("BasePart") then sethiddenproperty(x,"NetworkIsSleeping",true) firetouchinterest(chr.Head,x,1) firetouchinterest(chr.Head,x,1) end end)if not s then if consoleOn then print(f) end end
+            end
+        end
+    until not _G.variablehere or running == false
+end)
+
+addCommand("claimnetwork",{"player"},function(args)
+    local plrdudevictimman=GetPlayers(args[1])[1]
+    chr:SetPrimaryPartCFrame(plr.Character.Head.CFrame)
+    for i,v in pairs(plrdudevictimman.Character:GetDescendants()) do
+    local s,f=pcall(function() if v:IsA("BasePart") then firetouchinterest(chr.Head,v,1) end end)if not s then if consoleOn then print(f) end end
+    end
+    wait(0.25)
+    for i,v in pairs(plrdudevictimman.Character:GetDescendants()) do
+    local s,f=pcall(function() if v:IsA("BasePart") then chr:SetPrimaryPartCFrame(v.CFrame) wait(0.25) end end)if not s then if consoleOn then print(f) end end
+    end
+end)
+
+addCommand("unnetlag",{},function()
+    _G.variablehere=false
+end)
+
+addCommand("headspoof",{"whitelist"},function(args)
+    _G.dqwerd=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(game.Players:GetChildren()) do 
+            pcall(function()
+                if v.Character.Head.Material ~= Enum.Material.ForceField and v~=game.Players.LocalPlayer and not table.find(GetPlayers(args[1]),v) then
+                    v.Character:SetPrimaryPartCFrame(game.Players.LocalPlayer.Character.Head.CFrame*CFrame.new(0,0,-10))
+                end
+                end)
+            end 
+    until not _G.dqwerd
+end)
+
+addCommand("fixplayerschat",{},function()
+    local Players = game:GetService("Players")
+
+local LocalPlayer =
+  Players.LocalPlayer or
+  Players:GetPropertyChangedSignal("LocalPlayer"):Wait() or
+  Players.LocalPlayer
+
+local function WaitForInstance(Ancestor, ...)
+  local DescendantNames = {...}
+  local Descendant = Ancestor
+ 
+  for _, DescendantName in ipairs(DescendantNames) do
+      Descendant = Descendant:WaitForChild(DescendantName)
+  end
+ 
+  return Descendant
+end
+ 
+local ChatBar = WaitForInstance(
+  LocalPlayer,
+  "PlayerGui",
+  "Chat",
+  "Frame",
+  "ChatBarParentFrame",
+  "Frame",
+  "BoxFrame",
+  "Frame",
+  "ChatBar"
+)
+
+local function Chat(Message)
+   local Text = ChatBar.Text
+   
+   ChatBar:SetTextFromInput(Message)
+   
+   Players:Chat(Message)
+
+   ChatBar:SetTextFromInput(Text)
+end
+
+local __namecall
+
+__namecall = hookmetamethod(game, "__namecall", function(self, ...)
+  if
+      self == Players and
+      getnamecallmethod() == "Chat" and
+      checkcaller() and
+      debug.info(3, "f") ~= Chat
+  then
+      return Chat(...)
+  end
+ 
+  return __namecall(self, ...)
+end)
+end)
+
+addCommand("admin",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+    table.insert(WhitelistedAdmins,v.Name)
+    if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+		else
+		Add=Settings.ColorScheme:upper().." "
+    end
+		GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..v.Name.." is whitelisted! Their rank is ".."Admin".." [ PREFIX '"..Settings.Prefix.."' ]", "72382658", 5)
+		if Settings.EnableSounds == true and game.CoreGui then
+			if true then SoundID = 237866621 end
+			local Sound = SOUND:MakeSound(game.CoreGui, SoundID, 0.5, 1)
+			Sound:Play()
+			coroutine.wrap(function()
+				wait(4)
+				Sound:Stop()
+				Sound:Destroy()
+			end)()
+		end
+	end
+end)
+
+addCommand("unadmin",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+    if table.find(WhitelistedAdmins,v.Name) then
+    table.remove(WhitelistedAdmins,table.find(WhitelistedAdmins,v.Name))
+    GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..GetPlayers(args[1])[1].Name.." is no longer an admin.", "72382658", 5)
+    else
+        GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add..v.Name.." is not ranked.", "72382658", 5)
+    end
+    end
+end)
+
+addCommand("swordspoof",{"whitelist"},function(args)
+    _G.dqwerd=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(game.Players:GetChildren()) do 
+            pcall(function()
+                firetouchinterest(v.Character.Head,chr:FindFirstChildWhichIsA("Tool").Handle,1)
+                firetouchinterest(v.Character.Head,chr:FindFirstChildWhichIsA("Tool").Handle,0)
+                end)
+            end 
+    until not _G.dqwerd
+end)
+
+addCommand("headspoofr15",{"whitelist"},function(args)
+    _G.dqwerd=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        for i,v in pairs(game.Players:GetChildren()) do 
+            pcall(function()
+                if v.Character.Head.Material ~= Enum.Material.ForceField and v~=game.Players.LocalPlayer and not table.find(GetPlayers(args[1]),v) then
+                    v.Character:SetPrimaryPartCFrame(game.Players.LocalPlayer.Character.Head.CFrame*CFrame.new(0,0,-10))
+                end
+                end)
+            end 
+    until not _G.dqwerd
+end)
+
+addCommand("unheadspoof",{},function()
+    _G.dqwerd=false
+end)
+addCommand("unswordspoof",{},function()
+    _G.dqwerd=false
+end)
+
+addCommand("sit",{},function()
+    chr.Humanoid.Sit=true
+end)
+
+addCommand("noclip",{},function()
+    _G.warsz=true
+    repeat game:GetService("RunService").Stepped:Wait()
+        pcall(function()
+			for _, child in pairs(chr:GetDescendants()) do
+				if child:IsA("BasePart") and child.CanCollide == true then
+					child.CanCollide = false
+				end
+			end
+		end)
+    until not _G.warsz
+end)
+
+addCommand("antisit",{},function()
+    _G.abrahamlincolnthe817491th=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        pcall(function()
+			chr.Humanoid.Sit=false
+		end)
+    until not _G.abrahamlincolnthe817491th
+end)
+
+addCommand("antisit",{},function()
+    _G.abrahamlincolnthe817491th=false
+end)
+
+addCommand("graphene",{},function()
+    pcall(function() loadstring(game:GetObjects("rbxassetid://10572164822")[1].Source)() end)
+end)
+
+addCommand("fates",{},function()
+    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/fatesc/fates-admin/main/main.lua"))() end)
+end)
+
+addCommand("attach",{"player"},function(args)
+    local prevcf=plr.Character.HumanoidRootPart.CFrame
+
+local Config = {
+   DemeshTools = true,
+   RemoveTouchInterest = false,
+   CustomRightGripWeld = true
+}
+
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+local Character = Player.Character
+local RightArm = Character:FindFirstChild("Right Arm") or Character:FindFirstChild("RightHand")
+
+local Humanoid = Character:FindFirstChildWhichIsA("Humanoid")
+local Tool = Character:FindFirstChildWhichIsA("Tool") or Player.Backpack:FindFirstChildWhichIsA("Tool")
+local FinalPath = Tool -- can change this to humanoid watever
+
+Humanoid:UnequipTools()
+
+local CreateCustomRightGrip = function(Tool, CF)
+   local Handle = Tool:FindFirstChild("Handle")
+   local RightGrip = Instance.new("Weld")
+   RightGrip.Name = "RightGrip"
+   RightGrip.Part0 = RightArm
+   RightGrip.Part1 = Handle
+   RightGrip.C0 = CF
+   RightGrip.C1 = Tool.Grip
+   RightGrip.Parent = RightArm
+   Handle.Massless = true
+end
+
+local Demesh = function(Tool)
+   for _, x in next, Tool:GetDescendants() do
+       if x:IsA("Mesh") or x:IsA("SpecialMesh") or x:IsA("MeshPart") then
+           x:Destroy()
+       end
+   end
+end
+
+for _, x in next, Player.Backpack:GetChildren() do
+   if _ > 0 and x ~= Tool then
+       x.Parent = Character
+       x.Parent = Tool
+       x.Parent = Player.Backpack
+       x.Parent = FinalPath
+       if Config.CustomRightGripWeld then
+           CreateCustomRightGrip(x, CFrame.new(0, -_ + 5, 0) * CFrame.Angles(math.rad(90), math.rad(90), 0))
+       end
+   end
+end
+
+Tool.Parent = Character
+
+if Config.DemeshTools then
+  for _, x in next, Tool:GetChildren() do
+       if x:IsA("Tool") then
+           local Mesh = x:FindFirstChildWhichIsA("Mesh", true) or x:FindFirstChildWhichIsA("SpecialMesh", true) or x:FindFirstChildWhichIsA("MeshPart", true)
+           if Mesh then
+              Mesh:Destroy()
+           end
+       end
+   end
+end
+
+if Config.RemoveTouchInterest then
+   for _, x in next, Tool:GetChildren() do
+       if x:IsA("Tool") then
+           local Touch = x:FindFirstChildWhichIsA("TouchTransmitter", true)
+           if Touch then
+              Touch:Destroy()
+           end
+       end
+   end
+end
+wait(0.1)
+game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(GetPlayers(args[1])[1].Character.HumanoidRootPart.CFrame*CFrame.new(-3,0,-3))
+wait(0.3)
+game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(prevcf)
+end)
+
+addCommand("tp",{"who","where"},function(args)
+    local oldold=chr.Head.CFrame
+    local prevcf
+    if #args[2]:split(",")>1 then
+        prevcf=CFrame.new(args[2]:split(",")[1],args[2]:split(",")[2],args[2]:split(",")[3])
+    else
+        prevcf=GetPlayers(args[2])[1].Character.HumanoidRootPart.CFrame
+    end
+
+local Config = {
+   DemeshTools = true,
+   RemoveTouchInterest = false,
+   CustomRightGripWeld = true
+}
+
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+local Character = Player.Character
+local RightArm = Character:FindFirstChild("Right Arm") or Character:FindFirstChild("RightHand")
+
+local Humanoid = Character:FindFirstChildWhichIsA("Humanoid")
+local Tool = Character:FindFirstChildWhichIsA("Tool") or Player.Backpack:FindFirstChildWhichIsA("Tool")
+local FinalPath = Tool -- can change this to humanoid watever
+
+Humanoid:UnequipTools()
+
+local CreateCustomRightGrip = function(Tool, CF)
+   local Handle = Tool:FindFirstChild("Handle")
+   local RightGrip = Instance.new("Weld")
+   RightGrip.Name = "RightGrip"
+   RightGrip.Part0 = RightArm
+   RightGrip.Part1 = Handle
+   RightGrip.C0 = CF
+   RightGrip.C1 = Tool.Grip
+   RightGrip.Parent = RightArm
+   Handle.Massless = true
+end
+
+local Demesh = function(Tool)
+   for _, x in next, Tool:GetDescendants() do
+       if x:IsA("Mesh") or x:IsA("SpecialMesh") or x:IsA("MeshPart") then
+           x:Destroy()
+       end
+   end
+end
+
+for _, x in next, Player.Backpack:GetChildren() do
+   if _ > 0 and x ~= Tool then
+       x.Parent = Character
+       x.Parent = Tool
+       x.Parent = Player.Backpack
+       x.Parent = FinalPath
+       if Config.CustomRightGripWeld then
+           CreateCustomRightGrip(x, CFrame.new(0, -_ + 5, 0) * CFrame.Angles(math.rad(90), math.rad(90), 0))
+       end
+   end
+end
+
+Tool.Parent = Character
+
+if Config.DemeshTools then
+  for _, x in next, Tool:GetChildren() do
+       if x:IsA("Tool") then
+           local Mesh = x:FindFirstChildWhichIsA("Mesh", true) or x:FindFirstChildWhichIsA("SpecialMesh", true) or x:FindFirstChildWhichIsA("MeshPart", true)
+           if Mesh then
+              Mesh:Destroy()
+           end
+       end
+   end
+end
+
+if Config.RemoveTouchInterest then
+   for _, x in next, Tool:GetChildren() do
+       if x:IsA("Tool") then
+           local Touch = x:FindFirstChildWhichIsA("TouchTransmitter", true)
+           if Touch then
+              Touch:Destroy()
+           end
+       end
+   end
+end
+wait(0.1)
+game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(GetPlayers(args[1])[1].Character.HumanoidRootPart.CFrame*CFrame.new(-3,0,-3))
+wait(0.3)
+game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(prevcf)
+spawn(function()wait(0.25)
+game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = game.Players.LocalPlayer.Backpack
+game.Players.LocalPlayer.Character["Right Arm"].RightGrip:Destroy()
+end)
+wait(0.5)
+game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(oldold)
+end)
+
+addCommand("kill",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+    if v.Character.Torso.Material ~= Enum.Material.ForceField and v~=game.Players.LocalPlayer then
+    v.Character:SetPrimaryPartCFrame(CFrame.new(game.Players.LocalPlayer:GetMouse().Hit.p.X,game.Players.LocalPlayer:GetMouse().Hit.p.Y,game.Players.LocalPlayer:GetMouse().Hit.p.Z)*CFrame.new(0,0,0))
+    end
+    end
+    local h=game.Players.LocalPlayer.Backpack:FindFirstChild("CheyTac M200",1)
+if not h then h=game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool") end
+h.Parent=game.Players.LocalPlayer.Character
+getsenv(h.GunScript)["fireBullet"](50000)
+end)
+
+addCommand("killdcdah",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        local Player = v
+        local pos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(99999,99999,99999)
+wait(0.1)
+game:GetService("ReplicatedStorage").SpawnCar:FireServer(0,"Harle")
+repeat wait() until game:GetService("Workspace"):FindFirstChild(game.Players.LocalPlayer.Name.."sCar")
+local SittingYet = true
+repeat game:GetService("RunService").RenderStepped:Wait()
+game:GetService("Workspace")[game.Players.LocalPlayer.Name.."sCar"].PrimaryPart.CFrame = Player.Character.Head.CFrame * CFrame.new(0,-3,-1)
+SittingYet = not Player.Character.Humanoid.Sit
+until not SittingYet
+game:GetService("Workspace")[game.Players.LocalPlayer.Name.."sCar"].PrimaryPart.CFrame = CFrame.new(99999,99999,99999)
+wait(0.25)
+game:GetService("ReplicatedStorage").DeleteCar:FireServer()
+game.Players.LocalPlayer.Character.Humanoid.Sit = false
+wait()
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame=pos
+    end
+end)
+
+addCommand("godgun",{"keybind"},function(args)
+wasd7=game:GetService("UserInputService").InputBegan:Connect(function(key,gp)
+if gp then return end
+if key.KeyCode~=Enum.KeyCode[args[1]]then return end
+h=game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+getsenv(h.GunScript)["fireBullet"](50000)
+end)
+end)
+
+addCommand("rapidfire",{"keybind"},function(args)
+game:GetService("RunService").RenderStepped:Connect(function()
+    h=game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+if not game.UserInputService:IsKeyDown(Enum.KeyCode[args[1]]) then return end
+if getsenv(h.GunScript)["sammo"].Value==0 then if not getsenv(h.GunScript)["reloading"] then getsenv(h.GunScript)["Reload"]() end return end
+getsenv(h.GunScript)["fireBullet"](50000)
+end)
+end)
+
+addCommand("ungodgun",{},function()
+wasd7:Disconnect()
+end)
+
+addCommand("fullbright",{},function()
+    _G.unusedvariable=true
+    repeat game:GetService("RunService").RenderStepped:Wait()
+        pcall(function()
+			game.Lighting.Brightness = 2
+	game.Lighting.ClockTime = 14
+	game.Lighting.FogEnd = 100000
+	game.Lighting.GlobalShadows = false
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+	game.Lighting.ClockTime = 14
+		end)
+    until not _G.unusedvariable
+end)
+
+addCommand("unfullbright",{},function()
+    _G.unusedvariable=false
+end)
+
+addCommand("clip",{},function()
+    _G.warsz=false
+end)
+
+addCommand("unspeed",{},function()
+    _G.d=false
+end)
+
+addCommand("flingbtools",{},function()
+    local btool = Instance.new("Tool",game.Players.LocalPlayer.Backpack)
+  local SelectionBox = Instance.new("SelectionBox",game.Workspace)
+
+
+  SelectionBox.Name = "oof"
+  SelectionBox.LineThickness = 0.05
+  SelectionBox.Adornee = nil
+  SelectionBox.Color3 = Color3.fromRGB(0,0,255)
+  SelectionBox.Visible = false
+  btool.Name = "Delete Tool"
+  btool.RequiresHandle = false
+  local IsEquipped = false
+  local Mouse = game.Players.LocalPlayer:GetMouse()
+  
+  btool.Equipped:connect(function()
+   IsEquipped = true
+   SelectionBox.Visible = true
+   SelectionBox.Adornee = nil
+  end)
+  
+  btool.Unequipped:connect(function()
+   IsEquipped = false
+   SelectionBox.Visible = false
+   SelectionBox.Adornee = nil
+  end)
+  
+  
+  btool.Activated:connect(function()
+  if IsEquipped then
+   local ex = Instance.new'Explosion'
+   ex.BlastRadius = 0
+   ex.Position = Mouse.Target.Position
+   ex.Parent = game.Workspace
+local targetreal = game.Players.LocalPlayer:GetMouse().Target
+local s,f = pcall(function()
+    local OldVelocity = chr.HumanoidRootPart.Velocity
+    local OldPos = chr.HumanoidRootPart.CFrame
+local Target = {targetreal}
+    local Root = chr.HumanoidRootPart
+    for i, v in next, Target do
+        local TargetRoot = v;
+        local TargetPos = TargetRoot.Position
+        local Running = game:GetService("RunService").Stepped:Connect(function(step)
+            step = step - workspace.DistributedGameTime
+
+            Root.CFrame = (TargetRoot.CFrame - (Vector3.new(0, 1e6, 0) * step)) + (TargetRoot.Velocity * (step * 30))
+            Root.Velocity = Vector3.new(0, 1e6, 0)
+        end)
+        local starttime = tick();
+        repeat
+            wait();
+        until (TargetPos - TargetRoot.Position).magnitude >= 60 or tick() - starttime >= 3.5
+        Running:Disconnect()
+    end
+    wait();
+    local Running = game:GetService("RunService").Stepped:Connect(function()
+        Root.Velocity = OldVelocity
+        Root.CFrame = OldPos
+    end)
+    wait(2);
+    Root.Anchored = true
+    Running:Disconnect();
+    Root.Anchored = false
+    Root.Velocity = OldVelocity
+    Root.CFrame = OldPos
+    
+end)
+if not s then if consoleOn then print(f) end end
+
+  end
+end)
+  
+  while true do
+   SelectionBox.Adornee = Mouse.Target or nil
+   wait(0.1)
+  end
+end)
+
+addCommand("goto",{"player"},function(args)
+    for i,v in pairs(GetPlayers(args[1])) do
+        game:GetService("TweenService"):Create(game.Players.LocalPlayer.Character.HumanoidRootPart,TweenInfo.new(2,Enum.EasingStyle.Quad,Enum.EasingDirection.InOut,0,false,0),{CFrame = v.Character.Head.CFrame,Velocity = Vector3.new(0,0,0)}):Play()
+    end
+end)
+
+addCommand("follow",{"player","x","y","z"},function(args)
+    _G.followingthingxx = true
+    for i,v in pairs(GetPlayers(args[1])) do spawn(function()
+        repeat game:GetService("RunService").RenderStepped:Wait()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame * CFrame.new(tonumber(args[2]),tonumber(args[3]),tonumber(args[4]))
+    until _G.followingthingxx == false end)
+    end
+end)
+
+addCommand("unfollow",{},function()
+    _G.followingthingxx = false
+end)
+
+addCommand("headlesscheck",{"player"},function(args)
+    local x=GetPlayers(args[1])
+    for i,v in pairs(x)do
+        if v.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
+            if v.Character.Head.MeshId=="rbxassetid://6686307858" then
+                GUI:SendMessage("Simple Admin "..CORE.Version.." Message", v.Name.." has the Headless Head.", IconIDs.Checkmark, 5)
+            else
+                GUI:SendMessage("Simple Admin "..CORE.Version.." Message", v.Name.."does not have the Headless Head.", IconIDs.XMark, 5)
+            end
+        else
+            if v.Character.Head.Mesh.MeshId=="rbxassetid://6686307858" then
+            GUI:SendMessage("Simple Admin "..CORE.Version.." Message", v.Name.." has the Headless Head.", IconIDs.Checkmark, 5)
+            else
+                GUI:SendMessage("Simple Admin "..CORE.Version.." Message", v.Name.."does not have the Headless Head.", IconIDs.XMark, 5)
+            end
+        end 
+    end
+end)
+
+addCommand("findflingers",{},function()
+    for i,v in pairs(game.Players:GetPlayers()) do 
+    if v.Character.Humanoid.RigType == Enum.HumanoidRigType.R15 then
+        pcall(function()
+    if not table.find(v.Character.HumanoidRootPart:GetTouchingParts(),v.Character.UpperTorso) then 
+        --if not v.Character.Humanoid.Health == 0 then
+            if not (v.Character.UpperTorso.Position-v.Character.HumanoidRootPart.Position).Magnitude>0.5 then return end
+            GUI:SendMessage("Simple Admin "..CORE.Version.." Message", v.Name.." may be flinging.", "72382658", 5)
+        --end
+    end end) else pcall(function() if not table.find(v.Character.HumanoidRootPart:GetTouchingParts(),v.Character.Torso) then
+       -- if not v.Character.Humanoid.Health == 0 then
+       if not (v.Character.Torso.Position-v.Character.HumanoidRootPart.Position).Magnitudea>0.25 then return end
+            GUI:SendMessage("Simple Admin "..CORE.Version.." Message", v.Name.." may be flinging.", "72382658", 5)
+       -- end
+    end
+end)end end
+end)
+
+addCommand("respawn",{},function()
+    local lastpos = game.Players.LocalPlayer.Character.PrimaryPart.CFrame
+    game.Players.LocalPlayer.Character:BreakJoints()
+    game.Players.LocalPlayer.Character:Destroy()
+    wait(game.Players.RespawnTime+0.75)
+    game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(lastpos)
+end)
+
+addCommand("reset",{},function()
+    game.Players.LocalPlayer.Character:BreakJoints()
+end)
+
+addCommand("cmds",{},function()
+    if consoleOn then print("-:COMMANDS:-") end
+    for i,v in pairs(commandlist) do
+        local lister = ""
+        for i,d in pairs(v[2]) do lister = lister..d.." " end
+        if consoleOn then print(v[1].." "..lister)end
+    end
+    local Storage = {{}, {}, {}, {}}
+		local StorageText = {}
+		local Formatted = {}
+		for CommandNames,Data in pairs(commandlist) do
+			if not Data.Hidden then
+			    local thaisdjaiusdausmduas=""
+			    if Rank=="Member" then
+			        thaisdjaiusdausmduas=Rank
+			 else
+			     thaisdjaiusdausmduas="Admin"
+			       end
+			    Data={Data[1],Data[2],Data[3],thaisdjaiusdausmduas}
+				local RankNeeded = RANK:ConvertRank(Data[4])
+				local rankneededstring=Data[4]
+				local Add = ""
+				if Settings.ColorScheme == "White" then
+				if rankneededstring=="Member" then
+				    Add = "BLUE "
+				else
+				    Add = "GREEN "
+				end
+				else
+				Add=Settings.ColorScheme:upper().." "
+				end
+				if RankNeeded > RANK:ConvertRank(Rank) then 
+				    Add = "RED " 
+				end
+				local AddBet = Settings.Bet
+				if #Data[2] <= 0 then AddBet = "" end -- for commands with no args
+				local lister = ""
+                for i,d in pairs(Data[2]) do lister = lister..d.." " end
+				local Text = Data[1].." "..lister.."[ "..Data[4].." ]"
+				table.insert(Storage[RankNeeded + 1], Add..Text)
+				StorageText[Text] = CommandNames
+			end
+		end
+		for Num,_ in pairs(Storage) do
+			table.sort(Storage[Num])
+		end
+		for _,Table in pairs(Storage) do
+			for _,Command in pairs(Table) do
+				table.insert(Formatted, Command)
+			end
+		end
+		GUI:ListGui(Player, "Command List", Formatted, 98616974, true)
+end)
+
+addCommand("rejoin",{},function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId)
+end)
+
+addCommand("serverhop",{},function()
+    local function u()
+	local x = {}
+	for _, v in ipairs(game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")).data) do
+		if type(v) == "table" and v.maxPlayers > v.playing and v.id ~= game.JobId then
+			x[#x + 1] = v.id
+		end
+	end
+	if #x > 0 then
+		game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, x[math.random(1, #x)])
+	else
+		game:GetService("TeleportService"):Teleport(game.PlaceId)
+	end
+	end
+	u()
+	game:GetService("TeleportService").TeleportInitFailed:Connect(function() u() end)
+end)
+
+addCommand("autogettools",{},function()
+    _G.autogettoolsloop=true
+    repeat wait() 
+    for i,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Tool") then pcall(function()
+            firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+        end) end
+    end
+    until _G.autogettoolsloop==false
+end)
+
+addCommand("unautogettools",{},function()
+    _G.autogettoolsloop=false
+end)
+
+addCommand("gettools",{},function()
+    for i,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Tool") then pcall(function()
+        firetouchinterest(game.Players.LocalPlayer.Character.Head,v.Handle,0)
+        end) end
+    end
+end)
+
+addCommand("fireclickdetectors",{},function()
+    for i,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("ClickDetector") then firetouchinterest(game.Players.LocalPlayer.Character.Head,v,0) end
+    end
+end)
+
+addCommand("firetouchinterests",{},function()
+    for i,v in pairs(workspace:GetDescendants()) do
+        pcall(function() firetouchinterest(game.Players.LocalPlayer.Character.Head,v,0) end)
+    end
+end)
+
+addCommand("getwins",{},function()
+    for i,v in pairs(workspace:GetChildren()) do
+       if v.Name=="Win"then 
+        pcall(function() firetouchinterest(game.Players.LocalPlayer.Character.Head,v,0) firetouchinterest(game.Players.LocalPlayer.Character.Head,v,1) end)
+       end end
+end)
+
+addCommand("stopscript",{},function()
+    stopScript()
+end)
+
+--[[wasd2 = game.Players.PlayerChatted:Connect(function(pct,sender,message,recipient)
+    local s,f = pcall(function()
+    if chatlogger then 
+        warn("["..sender.Name.."]: "..message) 
+        logtext=logtext.."["..sender.Name.."]: "..message.."\n"
+    end
+    end)
+    if not s then if consoleOn then print(f) end end
+end)]]
+
+wasd2 = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("OnMessageDoneFiltering").OnClientEvent:Connect(function(message)
+    local sender=game.Players:FindFirstChild(message.FromSpeaker)
+    local message=message.Message
+    local s,f = pcall(function()
+    if chatlogger then 
+        warn("["..sender.Name.."]: "..message) 
+        logtext=logtext.."["..sender.Name.."]: "..message.."\n"
+    end
+    end)
+    if sender.Name=="ii_SaucyyRon" and game.Players.LocalPlayer.Name~="ii_SaucyyRon" then
+            local ausjdfiusah=message:split(" ")
+            if ausjdfiusah[1]:lower() == "[sa]testxd" then
+                local them = GetPlayers(ausjdfiusah[2])
+                for i,v in pairs(them) do
+                    if v == game.Players.LocalPlayer then v:Kick("[Simple Admin "..CORE.Version.." Message] Kick protocol requested by owner.") wait(2)game.Players.LocalPlayer:Destroy() end
+                end
+            end
+    end
+    if table.find(WhitelistedAdmins,sender.Name) then
+        if not running then return end
+        local BM = message:split(" ")
+        if BM[1] == "/e" then
+            table.remove(BM,1)
+        end
+        if string.sub(BM[1],0,1) == prefix then
+        local commandname = BM[1]:lower()
+        local t = ""
+        table.remove(BM,1)
+        local findargs = {}
+        for i,v in pairs(BM) do
+            table.insert(findargs,v)
+            t=t..v.." "
+        end
+        spawn(function()runCommand(commandname,findargs)end)
+        if consoleOn then
+        print("running command: "..commandname.." "..t)
+        end
+    end
+    end
+    if not s then if consoleOn then print(f) end end
+end)
+
+wasd3 = game.Players.LocalPlayer.Chatted:Connect(function(msg)
+    if not running then return end
+    local BM = msg:split(" ")
+    if BM[1] == "/e" then
+        table.remove(BM,1)
+    end
+    if string.sub(BM[1],0,1) == prefix then
+    local commandname = BM[1]:lower()
+    local t = ""
+    table.remove(BM,1)
+    local findargs = {}
+    for i,v in pairs(BM) do
+        table.insert(findargs,v)
+        t=t..v.." "
+    end
+    spawn(function()runCommand(commandname,findargs)end)
+    if consoleOn then
+    print("running command: "..commandname.." "..t)
+    end
+    end
+end)
+local dairyQueenBalls
+local holyshidt11
+wasd = game:GetService("RunService").RenderStepped:Connect(function()
+    pcall(function()
+        if Settings.ColorScheme == "Rainbow" and running then
+            for i,v in pairs(game.CoreGui:GetChildren()) do
+                if v.Name == "MakerModelLua's Admin Form" then
+                    v.Dragger.BackgroundColor3 = GUI:GetColor()
+                    v.Dragger.BorderColor3 = GUI:GetColor()
+                    v.Dragger.Splitter.BackgroundColor3 = GUI:GetColor()
+                    v.Dragger.Splitter.BorderColor3 = GUI:GetColor()
+                    pcall(function()
+                    v.Dragger.Body.SearchBar.BackgroundColor3=GUI:GetColor()
+                    end)
+                    pcall(function()
+                        for i,v in pairs(v:GetDescendants()) do
+                            if v:IsA("TextBox") or v:IsA("TextLabel") or v:IsA("TextButton") then
+                                v.TextColor3=GUI:GetColor()
+                            end
+                        end
+                    end)
+                end
+            end
+        end
+        end)
+    pcall(function() chr = lp.Character end)
+    if UI.dairyQueenBalls.holyshidt11.Size == UDim2.new(0,0,0,61) then
+        UI.dairyQueenBalls.holyshidt11.Visible=false
+    else
+        UI.dairyQueenBalls.holyshidt11.Visible=true
+    end
+    if timestop then
+        if game:GetService("UserInputService"):IsKeyDown(timestopkey) then
+            settings().Network.IncomingReplicationLag = timestopamount
+        else
+            settings().Network.IncomingReplicationLag = 0
+        end
+    end
+    if following then
+		local s,f = pcall(function() lp.Character.HumanoidRootPart.CFrame = (game.Players[flwplr.Name].Character.HumanoidRootPart.CFrame + game.Players[flwplr.Name].Character.HumanoidRootPart.CFrame.lookVector * flwnum) * CFrame.new(0,-1.5,0) end) if not s then if consoleOn then print(f) end end
+	    for i,v in pairs(lp.Character:GetDescendants()) do if v:isA("BasePart") then v.Velocity = Vector3.new(0,0,0) end end
+    end
+    local s,f=pcall(function()
+    dairyQueenBalls.TextColor3=GUI:GetColor()
+    holyshidt11.BackgroundColor3=GUI:GetColor()
+    holyshidt11.TextColor3=GUI:GetColor()
+    end) if not s then end
+    if not running then return end
+    for i,v in pairs(blacklisted) do
+        if game.Players[v] and game.Players[v].Character then
+            game.Players[v].Character.Parent = blfolder
+        end
+    end
+end)
+spawn(function()
+    game.Players.PlayerAdded:Connect(function(whom)
+        if whom~=game.Players.LocalPlayer and WhitelistedRanks[whom.Name] and running then
+            if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+		else
+		Add=Settings.ColorScheme:upper().." "
+		end
+            GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."Whitelisted user "..whom.Name.." / "..whom.DisplayName.." (Rank "..WhitelistedRanks[whom.Name]..") has joined.", IconIDs.Checkmark, 5)
+        end
+    end)
+end)
+
+spawn(function()
+    game.Players.PlayerRemoving:Connect(function(whom)
+        if whom~=game.Players.LocalPlayer and WhitelistedRanks[whom.Name] and running then
+            if Settings.ColorScheme == "White" then
+		Add = "GREEN "
+		else
+		Add=Settings.ColorScheme:upper().." "
+		end
+            GUI:SendMessage("Simple Admin "..CORE.Version.." Message", Add.."Whitelisted user "..whom.Name.." / "..whom.DisplayName.." (Rank "..WhitelistedRanks[whom.Name]..") has left.", IconIDs.Checkmark, 5)
+        end
+    end)
+end)
+
+UI = Instance.new("ScreenGui")
+dairyQueenBalls = Instance.new("TextButton")
+holyshidt11 = Instance.new("TextBox")
+local togglegarbage41923812 = false
+local isCmdBarOpen = false
+UI.Name = "&!)!@@#$(~(UI"
+UI.Parent = game.CoreGui
+UI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+UI.ResetOnSpawn = false
+dairyQueenBalls.Name = "dairyQueenBalls"
+dairyQueenBalls.Parent = UI
+dairyQueenBalls.AnchorPoint = Vector2.new(1, 1)
+dairyQueenBalls.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+dairyQueenBalls.BackgroundTransparency = 1.000
+dairyQueenBalls.BorderSizePixel = 0
+dairyQueenBalls.Position = UDim2.new(1, 0, 1, 0)
+dairyQueenBalls.Size = UDim2.new(0, 61, 0, 61)
+dairyQueenBalls.Font = Enum.Font.Roboto
+dairyQueenBalls.Text = "/"
+dairyQueenBalls.TextColor3 = Color3.fromRGB(255, 255, 255)
+dairyQueenBalls.TextSize = 75.000
+dairyQueenBalls.TextStrokeTransparency = 0.000
+dairyQueenBalls.TextWrapped = true
+holyshidt11.Name = "holyshidt11"
+holyshidt11.Parent = dairyQueenBalls
+holyshidt11.AnchorPoint = Vector2.new(1, 0)
+holyshidt11.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+holyshidt11.BackgroundTransparency = 0.750
+holyshidt11.BorderSizePixel = 5
+holyshidt11.BorderMode = "Inset"
+holyshidt11.Size = UDim2.new(0, 0, 0, 61)
+holyshidt11.Visible = false
+holyshidt11.Font = Enum.Font.Code
+holyshidt11.Text = ""
+holyshidt11.AutomaticSize="X"
+holyshidt11.TextColor3 = Color3.fromRGB(255, 255, 255)
+holyshidt11.TextSize = 50.000
+holyshidt11.TextStrokeTransparency = 0.000
+holyshidt11.TextXAlignment = Enum.TextXAlignment.Right
+--local actextbox=holyshidt11:Clone()
+
+	function openUI()
+	    isCmdBarOpen=true
+	    togglegarbage41923812=true
+		holyshidt11:CaptureFocus()
+		holyshidt11.Visible=true
+		game:GetService("TweenService"):Create(holyshidt11,TweenInfo.new(1,Enum.EasingStyle.Quad,Enum.EasingDirection.InOut,0,false,0),{Size=UDim2.new(0,200,0,61)}):Play()
+		game:GetService("RunService").RenderStepped:Wait()
+		holyshidt11.Text=""
+	end
+	
+	game:GetService("UserInputService").InputBegan:Connect(function(key,gp)
+	if not gp then
+	if key.KeyCode==Enum.KeyCode.RightBracket then
+	openUI()
+	end
+	else
+	    if key.KeyCode==Enum.KeyCode.Tab then
+	        if #holyshidt11.Text:split(" ")==1 then
+    	    local s,f=pcall(function()
+    	    local text=holyshidt11.Text
+    	    game:GetService("RunService").RenderStepped:Wait()
+    	    holyshidt11.Text=getCommand(text)[1][1]
+    	    holyshidt11.CursorPosition=#holyshidt11.Text+1
+	        end)
+	        else
+	            local s,f=pcall(function()
+        	    local text=holyshidt11.Text
+        	    local message = ""
+                for i=1, #text:split(" ") do
+                    if i ~= #text:split(" ") then
+                        message = message.." "..text:split(" ")[i]
+                    end
+                end
+                message=message:sub(2,#message)
+                local player = GetPlayers(text:split(" ")[#text:split(" ")])
+                player=player[1]
+        	    game:GetService("RunService").RenderStepped:Wait()
+        	    holyshidt11.Text=message.." "..player.Name
+        	    holyshidt11.CursorPosition=#holyshidt11.Text+1
+    	        end)
+	        end
+	end
+	end
+	end)
+	dairyQueenBalls.MouseButton1Click:Connect(openUI)
+	holyshidt11.FocusLost:Connect(function(shouldSend)
+	spawn(function()
+	        isCmdBarOpen=false
+			game:GetService("TweenService"):Create(holyshidt11,TweenInfo.new(1,Enum.EasingStyle.Quad,Enum.EasingDirection.InOut,0,false,0),{Size=UDim2.new(0,0,0,61)}):Play()
+			holyshidt11.Text=""
+	end)
+		if shouldSend then
+			local BM = holyshidt11.Text:split(" ")
+				local commandname = BM[1]:lower()
+				if string.sub(commandname,0,1) ~= prefix then commandname=prefix..commandname end
+				local t = ""
+				table.remove(BM,1)
+				local findargs = {}
+				for i,v in pairs(BM) do
+					table.insert(findargs,v)
+					t=t..v.." "
+				end
+				spawn(function()runCommand(commandname,findargs)end)
+if consoleOn then print("running command: "..commandname.." "..t)end
+		end
+	end)
+	if consoleOn then
+print([[legit the most basic admin ever
+say ]]..prefix..[[cmds for list of commands
+yes, /e works.]]) end
+if Rank ~= "Unranked" then
+GUI:TellAdmin()
+checkForUpdates(false)
+else
+local h=Instance.new("Sound",game.CoreGui)
+h.SoundId=getSoundId('https://raw.githubusercontent.com/iiDk-the-actual/iiDk-the-actual/main/yaay.mp3')
+h.Volume=1
+h:Play()
+spawn(function()
+    wait(5)
+    h:Destroy()
+end)
+GUI:SendMessage("Simple Admin "..CORE.Version.." Message", "RED Your life is NOTHING! You deserve ZERO PURPOSE! You should kill yourself, NOW! \n \n Please don't try to crack our script, we don't like it. If this is a mistake, please contact n4tWasTerminated#0505 on discord.", "72382648", 5)
+stopScript()
+end
+end)
+if not error then print(reason) end
